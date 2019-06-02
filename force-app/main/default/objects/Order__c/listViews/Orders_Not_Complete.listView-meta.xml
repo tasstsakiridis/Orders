@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Orders_Not_Complete</fullName>
+    <columns>NAME</columns>
+    <columns>Account_Name__c</columns>
+    <columns>CREATEDBY_USER</columns>
+    <columns>Order_Date__c</columns>
+    <columns>Material_Errors__c</columns>
+    <columns>Status__c</columns>
+    <columns>Wholesaler_Type__c</columns>
+    <columns>AccountNumber__c</columns>
+    <columns>Number_of_LineItems__c</columns>
+    <columns>Total_Discount__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Status__c</field>
+        <operation>notEqual</operation>
+        <value>Process Order,Complete,Rejected</value>
+    </filters>
+    <filters>
+        <field>Market__c</field>
+        <operation>equals</operation>
+        <value>Australia</value>
+    </filters>
+    <label>Incomplete Orders</label>
+    <language>en_US</language>
+    <sharedTo>
+        <roleAndSubordinates>AUDMarketManagerAdmin</roleAndSubordinates>
+    </sharedTo>
+</ListView>

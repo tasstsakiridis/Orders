@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Poland_Direct_Orders</fullName>
+    <columns>CREATEDBY_USER</columns>
+    <columns>NAME</columns>
+    <columns>Account__c</columns>
+    <columns>SAP_Customer_Number_SAP__c</columns>
+    <columns>Street_del__c</columns>
+    <columns>City__c</columns>
+    <columns>Total_Units__c</columns>
+    <columns>Total_Cases__c</columns>
+    <columns>Order_Date__c</columns>
+    <columns>Status__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>RECORDTYPE</field>
+        <operation>equals</operation>
+        <value>Order__c.New_Direct_Order,Order__c.Locked_Direct</value>
+    </filters>
+    <filters>
+        <field>SAP_Customer_Number_SAP__c</field>
+        <operation>notEqual</operation>
+    </filters>
+    <filters>
+        <field>Account__c</field>
+        <operation>notContain</operation>
+        <value>Intermarche,Piotr</value>
+    </filters>
+    <label>Poland Direct Orders (CuSe)</label>
+    <language>pl</language>
+    <sharedTo>
+        <role>PL_Customer_Service</role>
+        <role>PL_Market_Manager_Admin</role>
+    </sharedTo>
+</ListView>

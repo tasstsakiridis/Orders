@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Loaded_Discount__c</fullName>
+    <description>The discount that was loaded at the wholesaler at the time this order was placed</description>
+    <externalId>false</externalId>
+    <inlineHelpText>The discount that was loaded at the wholesaler at the time this order was placed</inlineHelpText>
+    <label>Loaded Discount</label>
+    <precision>10</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

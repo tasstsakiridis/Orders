@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Orders_W_O_a_Wholesaler</fullName>
+    <columns>NAME</columns>
+    <columns>Order_Date__c</columns>
+    <columns>Account_Name__c</columns>
+    <columns>Wholesaler_Name__c</columns>
+    <columns>CreatedBy_Name__c</columns>
+    <columns>Order_Processed__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Wholesaler_Name__c</field>
+        <operation>equals</operation>
+    </filters>
+    <label>Orders W/O a Wholesaler</label>
+    <language>en_US</language>
+    <sharedTo>
+        <roleAndSubordinatesInternal>AUDMarketManagerAdmin</roleAndSubordinatesInternal>
+    </sharedTo>
+</ListView>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Today1</fullName>
+    <booleanFilter>(1 AND 3 )AND 2</booleanFilter>
+    <columns>NAME</columns>
+    <columns>Account_Name__c</columns>
+    <columns>CreatedBy_Name__c</columns>
+    <columns>Order_Date__c</columns>
+    <columns>Order_Processed__c</columns>
+    <columns>Material_Errors__c</columns>
+    <columns>Status__c</columns>
+    <columns>Wholesaler_Type__c</columns>
+    <columns>AccountNumber__c</columns>
+    <columns>Total_Discount__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Order_Date__c</field>
+        <operation>equals</operation>
+        <value>TODAY</value>
+    </filters>
+    <filters>
+        <field>Market__c</field>
+        <operation>equals</operation>
+        <value>Australia</value>
+    </filters>
+    <filters>
+        <field>CREATED_DATE</field>
+        <operation>equals</operation>
+        <value>LAST_N_DAYS:3</value>
+    </filters>
+    <label>Today</label>
+    <language>en_US</language>
+    <sharedTo>
+        <roleAndSubordinatesInternal>AUDMarketManagerAdmin</roleAndSubordinatesInternal>
+    </sharedTo>
+</ListView>

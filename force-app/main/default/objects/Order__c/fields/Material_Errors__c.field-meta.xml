@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Material_Errors__c</fullName>
+    <description>Tracks how many material errors are in the Order</description>
+    <externalId>false</externalId>
+    <label>Material Errors</label>
+    <summarizedField>Order_Item__c.Missing_Material__c</summarizedField>
+    <summaryForeignKey>Order_Item__c.Order__c</summaryForeignKey>
+    <summaryOperation>sum</summaryOperation>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Summary</type>
+</CustomField>

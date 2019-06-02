@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Free_Stock_Discount_Check</fullName>
+    <active>true</active>
+    <description>Purpose: To ensure we don&#39;t have both Free Stock and Discount on the Same Item Level</description>
+    <errorConditionFormula>AND((Carton_Bonus__c   &gt; 0  ||   Unit_Bonus__c  &gt; 0) &amp;&amp;  Discount__c &gt; 0)</errorConditionFormula>
+    <errorMessage>Free Stock &amp; Discounts can NOT be applied to the same item level!</errorMessage>
+</ValidationRule>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Notes__c</fullName>
+    <description>Order with notes will send the order to customer service for review and will not be sent to the wholesaler automatically</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Customer Service Instructions</inlineHelpText>
+    <label>Notes:</label>
+    <length>32768</length>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Customer_Service_Today</fullName>
+    <columns>NAME</columns>
+    <columns>Account_Name__c</columns>
+    <columns>CreatedBy_Name__c</columns>
+    <columns>Order_Date__c</columns>
+    <columns>Material_Errors__c</columns>
+    <columns>RECORDTYPE</columns>
+    <columns>Status__c</columns>
+    <columns>Wholesaler_Type__c</columns>
+    <columns>Order_Processed__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Status__c</field>
+        <operation>equals</operation>
+        <value>Customer Service</value>
+    </filters>
+    <filters>
+        <field>Market__c</field>
+        <operation>equals</operation>
+        <value>Australia</value>
+    </filters>
+    <label>Customer Service - Today Aus</label>
+    <language>en_US</language>
+    <sharedTo>
+        <roleAndSubordinatesInternal>AUDMarketManagerAdmin</roleAndSubordinatesInternal>
+    </sharedTo>
+</ListView>

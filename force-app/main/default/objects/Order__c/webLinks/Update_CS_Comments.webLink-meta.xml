@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebLink xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Update_CS_Comments</fullName>
+    <availability>online</availability>
+    <displayType>button</displayType>
+    <encodingKey>UTF-8</encodingKey>
+    <linkType>url</linkType>
+    <masterLabel>Update CS Comments</masterLabel>
+    <openType>replace</openType>
+    <protected>false</protected>
+    <url>/flow/AU_CS_Order_Notes?orderId={!Order__c.Id}&amp;retURL={!Order__c.Id}</url>
+</WebLink>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Order_Item_Locked</fullName>
+    <active>false</active>
+    <description>If status is set to processed order then order items cannot be edited.</description>
+    <errorConditionFormula>ISPICKVAL(Order__r.Status__c , &#39;Process Order&#39;)  || ISPICKVAL(Order__r.Status__c , &#39;Complete&#39;)</errorConditionFormula>
+    <errorMessage>Order has already been processed. Changes cannot be made.  Please contact customer service.</errorMessage>
+</ValidationRule>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Price_Override_Processed_Time_Stamp__c</fullName>
+    <description>Price Override Processed (Time Stamp)</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Price Override Processed (Time Stamp)</inlineHelpText>
+    <label>Price Override (Time Stamp)</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>DateTime</type>
+</CustomField>

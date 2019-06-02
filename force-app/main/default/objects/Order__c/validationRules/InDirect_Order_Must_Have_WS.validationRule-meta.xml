@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>InDirect_Order_Must_Have_WS</fullName>
+    <active>true</active>
+    <description>An indirect order must have a wholesaler selected</description>
+    <errorConditionFormula>IF( Wholesaler__r.Country__c  = &quot;Australia&quot;, (ISPICKVAL( Order_Type__c , &#39;In-Direct&#39;) &amp;&amp; ISBLANK ( Wholesalers__c)), FALSE)</errorConditionFormula>
+    <errorDisplayField>Wholesalers__c</errorDisplayField>
+    <errorMessage>An in-direct order requires a wholesaler.</errorMessage>
+</ValidationRule>

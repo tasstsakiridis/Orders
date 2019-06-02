@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebLink xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Fix_Material_Errors</fullName>
+    <availability>online</availability>
+    <displayType>button</displayType>
+    <encodingKey>UTF-8</encodingKey>
+    <height>600</height>
+    <linkType>url</linkType>
+    <masterLabel>Fix Material Errors</masterLabel>
+    <openType>sidebar</openType>
+    <protected>false</protected>
+    <url>/apex/OrderItemsHTML?id={!Order__c.Id}&amp;fixMaterialErrors=1</url>
+</WebLink>

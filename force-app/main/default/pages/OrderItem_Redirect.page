@@ -1,0 +1,3 @@
+<apex:page standardController="Order_Item__c" extensions="OrderItem_Redirect_Controller" action="{!Redirect}">
+
+</apex:page>

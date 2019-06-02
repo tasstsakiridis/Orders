@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebLink xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>New_Indirect_Order</fullName>
+    <availability>online</availability>
+    <description>New Indirect Order</description>
+    <displayType>massActionButton</displayType>
+    <encodingKey>UTF-8</encodingKey>
+    <linkType>url</linkType>
+    <masterLabel>New Indirect Order</masterLabel>
+    <openType>replace</openType>
+    <protected>false</protected>
+    <requireRowSelection>true</requireRowSelection>
+    <url>/a1j/e?CF00N30000009cHtT={!Account.Name}&amp;CF00N30000009cHtT_lkid={!Account.Id}&amp;retURL=%2F{!Account.Id}&amp;RecordType=012a0000001Na6I</url>
+</WebLink>

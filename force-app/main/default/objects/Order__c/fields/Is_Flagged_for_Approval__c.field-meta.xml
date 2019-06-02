@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_Flagged_for_Approval__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>If a discount is enterred on that is greater than the tolerance, or if there is bonus stock, this field will be checked so that it can go through an approval process before it gets sent to the wholesaler.</description>
+    <externalId>false</externalId>
+    <label>Is Flagged for Approval</label>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

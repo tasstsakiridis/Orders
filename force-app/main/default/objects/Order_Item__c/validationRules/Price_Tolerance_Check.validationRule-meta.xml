@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Price_Tolerance_Check</fullName>
+    <active>false</active>
+    <description>Validation to see if Price Override will work</description>
+    <errorConditionFormula>Discount__c   &gt;  Max_PA_Per_Case__c</errorConditionFormula>
+    <errorDisplayField>Discount__c</errorDisplayField>
+    <errorMessage>Price Tolerance Reached - Please Enter a Lower Amount</errorMessage>
+</ValidationRule>
