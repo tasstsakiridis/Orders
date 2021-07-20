@@ -1,0 +1,119 @@
+<apex:component layout="none" access="global" controller="TWN_Order_Wholesaler_Email_Controller">
+    <apex:attribute name="order" description="the order record" type="Order__c" assignTo="{!theOrder}" />
+
+<html>
+    <head>
+        <style>
+            @page {
+                margin: 1cm;
+            }
+        </style>
+    </head>
+    <body>
+        <p>{!relatedTo.Wholesaler_Name__c} 您好</p>
+        <br />
+        <p>{!relatedTo.OrderNumber__c}</p>
+        <p>您有來自 {!order.Account_Name__c} 的訂單明細如下。</p>
+        <p>建議出貨前先與客戶確認訂單內容與金額，以及送貨時間和地址。</p>
+        <br />
+        <table>
+            <tr>
+                <td>
+                    <p>
+                        <apex:outputText value="{0}: {1}">
+                            <apex:param value="{!$ObjectType.Order__c.Fields.Account__c.Label}" />
+                            <apex:param value="{!relatedTo.Account_Name__c}" />
+                        </apex:outputText>
+                    </p>
+                </td>
+                <td>
+                    <p>
+                        <apex:outputText value="{0}: {1}">
+                            <apex:param value="{!$Label.Phone}" />
+                            <apex:param value="{!relatedTo.Account.Phone}" />
+                        </apex:outputText>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <apex:outputText value="訂單時間: {0, date, yyyy/mm/dd}">
+                        <apex:param value="{!order.Order_Date__c}" />
+                    </apex:outputText>
+                </td>
+                <td>
+                    <p>
+                        <apex:outputText value="{0}: {1}">
+                            <apex:param value="{!$Label.Shipping_Address}" />
+                            <apex:param value="{!relatedTo.Account__r.ShippingAddress}" />
+                        </apex:outputText>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p>
+                        <apex:outputText value="{0}: {1}">
+                            <apex:param value="{!$ObjectType.Order__c.Fields.OrderNumber__c.Label}" />
+                            <apex:param value="{!relatedTo.OrderNumber__c}" />
+                        </apex:outputText>
+                    </p>
+                </td>
+                <td>
+                    <p>
+                        <apex:outputText value="{0}: {1}">
+                            <apex:param value="{!$ObjectType.Account.Fields.E_Mail_Address__c.Label}" />
+                            <apex:param value="{!relatedTo.Account__r.E_Mail_Address__c}" />
+                        </apex:outputText>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p>
+                        <apex:outputText value="{0}: {1}">
+                            <apex:param value="{!$ObjectType.Order__c.Fields.Account_Owner__c.Label}" />
+                            <apex:param value="{!relatedTo.AccountOwner__c}" />
+                        </apex:outputText>
+                    </p>
+                </td>
+                <td>
+                    <apex:outputText value="{0}: {1, number, currency}">
+                        <apex:param value="{!$ObjectType.Order__c.Fields.Total_Order_Value__c.Label}" />
+                        <apex:param value="{!relatedTo.Total_Order_Value__c}" />
+                    </apex:outputText>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <p>
+                        <apex:outputText value="{0}: {1}">
+                            <apex:param value="{!$ObjectType.Order__c.Fields.Comments__c.Label}" />
+                            <apex:param value="{!relatedTo.Comments__c}" />
+                        </apex:outputText>
+                    </p>
+                </td>
+            </tr>
+        </table>
+        <br />
+        <div>
+            <apex:outputPanel id="items" title="Items" layout="block">
+                <h4 class="section-title">Items</h4>
+                <apex:dataTable cellpadding="5" border="1" var="oi" value="{!relatedTo.Promotion_Material_Items__r}">
+                    <apex:column value="{!oi.Brand_Name__c}" headerValue="{!$ObjectType.Order_Item__c.Fields.Brand_Name__c.Label}" width="100px"  />
+                    <apex:column value="{!oi.SAP_Material_Number__c}" headerValue="{!$ObjectType.Order_Item__c.Fields.Brand_Name__c.Label}" width="100px"  />
+                    <apex:column value="{!oi.Product_Description__c}" headerValue="{!$ObjectType.Order_Item__c.Fields.Product__c.Label}" width="300px" style="color:blue;" />
+                    <apex:column value="{!oi.Unit__c}" headerValue="{!$ObjectType.Order_Item__c.Fields.Unit__c.Label}" width="100px" />
+                    <apex:column value="{!oi.Total_Ordered_Cases__c}" headerValue="{!$ObjectType.Order_Item__c.Fields.Total_Ordered_Cases__c.Label}" width="100px" />
+                    <apex:column value="{!oi.Price__c}" headerValue="{!$ObjectType.Order_Item__c.Fields.Price__c.Label}" width="100px" />
+                    <apex:column value="{!oi.Discount_Percentage__c}" headerValue="{!$ObjectType.Order_Item__c.Fields.Discount_Percentage__c.Label}" width="100px" />
+                    <apex:column value="{!oi.Final_Price__c}" headerValue="{!$ObjectType.Order_Item__c.Fields.Final_Price__c.Label}" width="100px" />
+                    <apex:column value="{!oi.Total_Line_Value__c}" headerValue="{!$ObjectType.Order_Item__c.Fields.Total_Line_Value__c.Label}" width="100px" />
+                    <apex:column value="{!oi.Unit_Bonus__c}" headerValue="{!$ObjectType.Order_Item__c.Fields.Unit_Bonus__c.Label}" width="150px" />
+                </apex:dataTable>
+            </apex:outputPanel>                
+        </div>
+
+    </body>
+</html>
+</apex:component>

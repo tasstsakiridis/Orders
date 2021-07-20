@@ -1,3 +1,6 @@
+/**
+* Test Class:  Order_Controller_Test
+*/
 global with sharing class Order_Controller {
     public Order__c thisOrder					{ get; set; }
     public Account thisAccount					{ get; set; }
@@ -49,7 +52,14 @@ global with sharing class Order_Controller {
             returnToId = orderId;
             
             if (orderId != null && orderId != '') {
-                thisOrder = [SELECT Id, Name, RecordTypeId, RecordType.Name, Order_Type__c, Status__c, Market__c, Account__c, Contact__c, Contact__r.Name, Contact__r.FirstName, Contact__r.LastName, CallCard__c, (SELECT Id, Product__c, Carton__c, Carton_Bonus__c, Unit__c, Unit_Bonus__c, Max_PA_Per_Case__c FROM Order_Items__r) FROM Order__c WHERE Id =:orderId];
+                thisOrder = [SELECT Id, Name, RecordTypeId, RecordType.Name, Order_Type__c, Order_Date__c, Order_DateTime__c, Status__c, 
+                                    Market__c, Account__c, Contact__c, Contact__r.Name, Contact__r.FirstName, Contact__r.LastName, 
+                                    CallCard__c, 
+                                    (SELECT Id, Product__c, Carton__c, Carton_Bonus__c, Unit__c, Unit_Bonus__c, Max_PA_Per_Case__c 
+                                       FROM Order_Items__r) 
+                               FROM Order__c 
+                              WHERE Id =:orderId];
+
                 recordTypeName = thisOrder.RecordType.Name;
                 orderType = thisOrder.Order_Type__c;            
                 isNewOrder = false;
@@ -179,7 +189,8 @@ System.debug('Orderid: ' + orderId);
         List<RelationshipWrapper> relationships = new List<RelationshipWrapper>();
         relationships.add(new RelationshipWrapper('Contact__c', 'Contact', 'people', 'WHERE AccountId = \'' + String.escapeSingleQuotes(accountId) + '\' AND Is_Active__c = true'));
         relationships.add(new RelationshipWrapper('Account_Wholesaler_Indirect__c', 'Account_Wholesaler__c', 'account', 'WHERE Account__c = \'' + String.escapeSingleQuotes(accountId) + '\' AND Is_Active__c = true', 'Wholesaler_Name__c'));
-        relationships.add(new RelationshipWrapper('Wholesalers__c', 'Account_Wholesaler__c', 'account', 'WHERE Account__c = \'' + String.escapeSingleQuotes(accountId) + '\' AND Is_Active__c = true', 'Wholesaler_Name__c'));
+        relationships.add(new RelationshipWrapper('Wholesalers__c', 'Account_Wholesaler__c', 'account', 'WHERE Account__c = \'' + String.escapeSingleQuotes(accountId) + '\' AND Is_Active__c = true AND Allow_Order__c = true', 'Wholesaler_Name__c'));
+        relationships.add(new RelationshipWrapper('Promotion__c', 'Promotion__c', 'promotion', 'WHERE Account__c = \'' + String.escapeSingleQuotes(accountId) + '\' AND Promotion_End_Date__c > TODAY AND Approval_Status__c = \'Approved\''));
         
         serializedRelationshipList = JSON.serialize(relationships);
         if (readOnlyFieldSet != null) {
@@ -201,6 +212,9 @@ System.debug('Orderid: ' + orderId);
             uniqueFields.add('Contact__r.Name');
             uniqueFields.add('RecordTypeId');
             uniqueFields.add('RecordType.Name');
+            if (marketName == 'Australia') {
+    	        uniqueFields.add('Order_DateTime__c');
+            }
             
             if (Schema.SObjectType.Order__c.fields.Account_Wholesaler_Indirect__c.isAccessible()) {
                 uniqueFields.add('Account_Wholesaler_Indirect__c');
@@ -209,6 +223,10 @@ System.debug('Orderid: ' + orderId);
             if (Schema.SObjectType.Order__c.fields.Wholesalers__c.isAccessible()) {
                 uniqueFields.add('Wholesalers__c');
                 uniqueFields.add('Wholesalers__r.Wholesaler_Name__c');
+            }
+            if (Schema.SObjectType.Order__c.fields.Promotion__c.isAccessible()) {
+                uniqueFields.add('Promotion__c');
+                uniqueFields.add('Promotion__r.Name');
             }
             for(FieldSetWrapper fsw : orderFieldSet) {
                 for(Schema.FieldSetMember fsm : fsw.fields) {
@@ -247,23 +265,30 @@ System.debug('Orderid: ' + orderId);
     @RemoteAction
     global static Order__c saveOrder(String fields) {
         Order__c order = (Order__c)JSON.deserialize(fields, Order__c.class);
-            
+
+        if (order.Order_Date__c != null) {
+    	    Time tm = Time.newInstance(6, 0, 0, 0);        
+	        order.Order_DateTime__c = DateTime.newInstance(order.Order_Date__c, tm);            
+        }
+        
         upsert order;
         return order;
     }
     @RemoteAction
     global static void processOrder(String orderId, Boolean requiresApproval) {
-        Order__c order = [SELECT Id, Market__c, Is_Flagged_for_Approval__c, Status__c FROM Order__c WHERE Id =: orderId];
+        Order__c order = [SELECT Id, Order_Date__c, Market__c, Is_Flagged_for_Approval__c, Status__c FROM Order__c WHERE Id =: orderId];
         if (requiresApproval == false) {
             //order.Status__c = 'New';
-	        order.Status__c = 'Process Order';       
+	        order.Status__c = 'Process Order';  
             if (order.Order_Date__c > Date.today()) {
                 order.Status__c = 'Future Order';
             }
         }
+        
         System.debug('order market name: ' + order.Market__c);
         order.Is_Flagged_for_Approval__c = requiresApproval;
         System.debug('requiresapproval: ' + order.Is_Flagged_for_Approval__c);
+        
         if (order.Market__c == 'Australia') {
             order.RecordTypeId = Order__c.SObjectType.getDescribe().getRecordTypeInfosByName().get('Locked').getRecordTypeId();     
         }
