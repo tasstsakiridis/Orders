@@ -821,17 +821,19 @@
                         console.log('[units change] str', str);
                         j$(caseFldId).html(str);
 
-                    var discount = j$('Discount_Percentage__c'+prodId).val();
-                    if (discount == null || discount == '') { discount = 0; }
-                    var price = j$(this).attr('data-price');
-                    if (price == undefined || price == null) { price = 0; }
-                    var totalPrice = thisVal * price;
-                    if (discount > 0) {
-                       totalPrice = totalPrice * (1-(discount/100));
-                    }
-                    var finalPriceFldId = '#Final_Price__c' + prodId;
-                    j$(finalPriceFldId).html(totalPrice.toFixed(2));
-
+                    
+                    var finalPrice = j$('Final_Price__c'+prodId).val();
+                    if (finalPrice == null || finalPrice == '') { finalPrice = 0; }
+                    //var price = j$(this).attr('data-price');
+                    //if (price == undefined || price == null) { price = 0; }
+                    //var totalPrice = thisVal * price;
+                    //if (discount > 0) {
+                    //   totalPrice = totalPrice * (1-(discount/100));
+                    //}
+                    totalLineValue = finalPrice * units;
+                    var totalLineValueFldId = '#Total_Line_Value__c' + prodId;
+                    j$(totalLineValueFldId).html(totalLineValue.toFixed(2));
+                    
                     updateTotalOrderValue();
                 });
                 j$("input[field='Discount_Percentage__c']").off('change')
@@ -850,16 +852,20 @@
                         alert(discountAboveThresholdError);
                         j$(this).val(0);
                     } else {
-                        var totalPrice = units * price;
+                        var totalPrice = price;
                         if (discount > 0) { 
                             totalPrice = totalPrice * (1-(discount/100)); 
                         }
+                        var totalLineValue = totalPrice * units;
                         console.log('price', price);
                         console.log('units', units);
                         console.log('discount', discount);
                         console.log('totalPrice', totalPrice);
                         var finalPriceFldId = '#Final_Price__c' + j$(this).attr('data-product-id');
                         j$(finalPriceFldId).html(totalPrice.toFixed(2));
+
+                        var totalLineValueFldId = '#Total_Line_Value__c' + j$(this).attr('data-product-id');
+                        j$(totalLineValueFldId).html(totalLineValue.toFixed(2));
 
                         updateTotalOrderValue();
                     }
@@ -872,7 +878,7 @@
                 selector = '#oiTable tr';
             }
 
-            var rows = j$(selector + ' [field="Final_Price__c"]');
+            var rows = j$(selector + ' [field="Total_Line_Value__c"]');            
             var totalOrderValue = 0;
             console.log('[updateTotalOrderValue] rows', rows);
             j$.each(rows, function(key, value) {
@@ -1166,7 +1172,7 @@
                     selector = '#oiTable tbody tr';
                 }
                 console.log('[buildProductItems] lockOrder', lockOrder);
-                if (lockOrder == true) {
+                if (lockOrder == true || marketName == 'Australia' || marketName == 'Czech Republic' || marketName == 'Poland') {
                     j$(selector+'[data-oi-id=""]').hide();
                     j$(selector+' :not([data-oi-id=""])').show();
                     //buildOrderItems();
