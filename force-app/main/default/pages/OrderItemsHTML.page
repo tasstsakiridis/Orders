@@ -9,7 +9,6 @@
         <script src='https://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js'></script>        
         
         <script src="https://www.b-fonline.com/salesforceresources/numeral-js/min/numeral.min.js"></script>
-		<script src="https://www.b-fonline.com/salesforceresources/SFA/js/fastclick/lib/fastclick.js"></script>
 		<script src="https://www.b-fonline.com/salesforceresources/select2-4.0.3/dist/js/select2.min.js"></script>
 		<script src="https://www.b-fonline.com/salesforceresources/Bootgrid/js/jquery.bootgrid.js"></script>
 		<script src="https://www.b-fonline.com/salesforceresources/Bootgrid/js/jquery.bootgrid.fa.min.js"></script>        
@@ -23,19 +22,6 @@
         <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/SLDS091/assets/styles/salesforce-lightning-design-system-ltng.min.css" />
         <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/Bootgrid/css/jquery.bootgrid.min.css" />
         
-        <!--<apex:includeScript value="{!URLFOR($Resource.SFA, '/js/fastclick/lib/fastclick.js')}" />-->
-        <!--<script src="{!URLFOR($Resource.SFA, '/lib/tokenize/Tokenize-2.4/jquery.tokenize.js')}"></script>-->
-        <!--<script src="{!URLFOR($Resource.Bootgrid, '/jquery.bootgrid.js')}"></script>-->
-        <!--<script src="{!URLFOR($Resource.Bootgrid, '/jquery.bootgrid.fa.min.js')}"></script>-->
-        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js//1.4.5/numeral.min.js"></script>-->
-        
-        <!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"/>-->
-        <!--<apex:stylesheet value="{!URLFOR($Resource.SFA, '/css/accountSurvey.css')}" />-->
-        <!--<apex:stylesheet value="{!URLFOR($Resource.SFA, '/lib/tokenize/Tokenize-2.4/jquery.tokenize.css')}" />-->
-        <!--<apex:stylesheet value="{!URLFOR($Resource.bootstrapmodernp, '/startbootstrap-modern-business-gh-pages/css/bootstrap.min.css')}" />-->
-        <!--<apex:stylesheet value="{!URLFOR($Resource.bootstrapmodernp, '/startbootstrap-modern-business-gh-pages/css/bootstrap-theme.min.css')}"/>-->
-        <!--<apex:stylesheet value="{!URLFOR($Resource.SLDS091, '/assets/styles/salesforce-lightning-design-system-ltng.min.css')}" />-->
-        <!--<apex:stylesheet value="{!URLFOR($Resource.Bootgrid, '/jquery.bootgrid.min.css')}"/>-->
     </head>
     <style>
         input.slds-input-clone {
@@ -113,10 +99,16 @@
         .bg_hd_supplier {
         	width: 10%;
         }
-        
+        #totalOrderValue {
+            font-size: 18pt;
+            font-weight: bold;
+            margin-right: 10px;
+            float: right;
+        }
     </style>            
     <script src="{!urlPrefix}/soap/ajax/35.0/connection.js" type="text/javascript"></script>    
     <script>
+    
         var j$ = jQuery.noConflict();
 
         //Initialize sforce Connection for MetaDataApi calls
@@ -127,30 +119,47 @@
             sforce.connection.serverUrl = urlPrefix + sforce.connection.serverUrl;
         }
 
+        
         var filterRowsPerPage = 10;
         var today = new Date();
         var thisOrder = {!serializedOrder};
-        var orderItemList = {!serializedOrderItemList};        
+        console.log('thisOrder', thisOrder);
+        var promotion = [{!serializedPromotion}][0];
+        console.log('promotion', promotion);
+        var orderItemList = {!serializedOrderItemList};      
+        console.log('orderItemList', orderItemList);  
         var productList = {!serializedProductList};
+        console.log('productList', productList);
         var orderItemFS = {!serializedOrderItemFS};
+        console.log('orderItemFS', orderItemFS);
         var readOnlyFields = [{!serializedReadOnlyFieldList}][0];
+        console.log('readOnlyFields', readOnlyFields);
         var toleranceList = [{!serializedToleranceList}][0];
+        console.log('toleranceList', toleranceList);
         var dealList = [{!serializedDealList}][0];
     console.log('productList', productList);
     console.log('toleranceList', toleranceList);
     console.log('dealList', dealList);
     console.log('orderItemFS', orderItemFS);
     console.log('orderitemlist', orderItemList);
+
         var orderType;
         var itemRecordTypeId = '{!itemRecordTypeId}';
+        console.log('itemRecordTypeId', itemRecordTypeId);
         var marketName = '{!marketName}';
+        console.log('marketName', marketName);
+        var discountThreshold = '{!discountThreshold}';
+        console.log('discountThreshold', discountThreshold);
         var channel;
+        console.log('channel', channel);
+        
         var returnURL = '{!$CurrentPage.Parameters.retUrl}';
         var returnToAccountVisit = '{!$CurrentPage.Parameters.returnToAccountVisit}';
         var deviceType;
         var redirect = false;
         var inSF1 = false;
         var isDesktop = true;
+        var isShowingAllProducts = true;
         var lockOrder = {!lockOrder};
         var labelEmpty = '{!$Label.All}';
         var requiredFieldsMessage = '{!$Label.RequiredFieldsMessage}';
@@ -162,6 +171,10 @@
         var warningHeader = '{!$Label.Warning_Title}';
         var noQtyErrorMessage = '{!$Label.NoQtyErrorMessage}';
     	var addSelectedProductsLabel = '{!$Label.Add_Selected_Products}';
+        var totalOrderValueLabel = '{!$Label.Total_Order_Value}';
+        var discountAboveThresholdError = '{!$Label.DiscountAboveThreshold}';
+        var labelAllProducts = '{!$Label.All_Products}';
+        var labelProductOnOrder = '{!$Label.Products_on_this_Order}';
         
         //arrays for each of the filters to build out select options
         var brandSearch = [];
@@ -195,12 +208,7 @@
             { objectName: 'Order_Item__c', market: 'Australia', fieldName: 'Max_PA_Per_Case__c', customLabel: '{!$Label.Tolerance}' }
         ];
 
-
         j$(document).ready(function() {
-            j$(function() {
-                FastClick.attach(document.body);
-            });
-            
             if( (typeof sforce != 'undefined') && (sforce.one != null) ) {
                 inSF1 = true;
             }else{
@@ -221,86 +229,19 @@
                 }
             }
             isDesktop = deviceType == 'desktop';
-            
-            /*
-            j$('#bootgrid').bootgrid({
-                selection: true,
-                multiSelect: true,
-                keepSelection: true,
-                caseSensitive: false,
-                rowSelect: true,
-                formatters: {
-                    "product": function(col, row) {
-                        var v = "";
-                        if (row.added == true) {
-                            v = "<i class=\"fa fa-check-square-o\"></i>" + row.product;
-                        } else {
-                            v = row.product;
-                        }
-                        return v;
-                    }
-                },
-				labels: {
-                    all: "{!$Label.All}",
-                    infos: "{!$Label.BootgridInfos}",
-                    loading: "{!$Label.Loading}",
-                    noResults: "{!$Label.NoResults}",
-                    refresh: "{!$Label.Refresh}",
-                    search: "{!$Label.Search}"
-                }                
-            }).on("selected.rs.jquery.bootgrid", function(e, rows) {
-                var rowIds = [];
-                for (var i = 0; i < rows.length; i++)
-                {
-                    rowIds.push(rows[i].product + '[' + rows[i].id + '], added: ' + rows[i].added);
-                    rows[i].added = true;
-                    productsSelected.push({id:rows[i].id,name:rows[i].product});
-                }
-                console.log('[selected] rows', rows);
-                console.log('[selected] productsselected', productsSelected);
-            }).on("deselected.rs.jquery.bootgrid", function(e, rows) {
-                console.log('[deselected] rows', rows);
-                console.log('[deselected] productsselected', productsSelected);
-                for(var i = 0; i < rows.length; i++) {
-                    for(var j = 0; j < productsSelected.length; j++) {
-                        if (productsSelected[j].id == rows[i].id) {
-                            productsSelected.splice(j, 1);
-                            break;
-                        }
-                    }
-                }
-            });
-            
-            var v = "<button class='btn btn-default bg-primary add-products-button' type='button' style='float:left; margin-right:10px; z-index: 99;'>"+addSelectedProductsLabel+"</button>";
-            j$('.actionBar').prepend(v);
-            j$('.bootgrid-footer > div.row > div:first-child').prepend(v);
-            j$('.bootgrid-footer > div.row > div:first-child').removeClass('col-sm-6');
-            j$('.bootgrid-footer > div.row > div:first-child').addClass('col-sm-9');
-            j$('.bootgrid-footer > div.row > div.infoBar').removeClass('col-sm-6');            
-            j$('.bootgrid-footer > div.row > div.infoBar').addClass('col-sm-3');
-            if (deviceType == 'phone') {
-	            j$.each(j$('.dropdown-item-checkbox'), function() {
-    	            if (this.name !== "product") { j$(this).trigger('click'); }
-        	    });
-            }
-            j$('.add-products-button').click(function() {
-                var selectedRows = j$('#bootgrid').bootgrid("getSelectedRows");
-                j$.each(productsSelected, function() {
-                    addProductToOrderItemList(this.id, this.name, true);
-                });
-                
-                j$('#bootgrid').bootgrid('deselect');
-                productsSelected = [];
-            });
-            */
-            if ((marketName == 'Australia' || marketName == 'Czech Republic') && orderItemList.length > 0) {
+            loading('load', true);
+
+            if ((marketName == 'Australia' || marketName == 'Czech Republic' || marketName == 'Taiwan') && orderItemList.length > 0) {
                 j$('.processOrder').removeAttr('disabled')
                 				   .removeClass('hidden')
                 				   .show();
             } else {
                 j$('.processOrder').hide();
             }
-            
+            if (marketName != 'Taiwan') {
+                j$('#totalOrderValue').hide();
+            }
+
             buildRequiredFieldsList();
             buildHeaderSection();
             buildOrderItemTableHeader();
@@ -316,8 +257,13 @@
                 j$('.saveAndClose').hide();
                 j$('.processOrder').hide();
             }
+            if (promotion != undefined && promotion.Promotion_Material_Items__r != undefined && promotion.Promotion_Material_Items__r.records.length > 0) {
+                j$('.btn-product-toggle').click();
+            }
+
+            loading('load', false);
         });
-        
+
         function buildRequiredFieldsList() {
             requiredFields = [];
             j$.each(orderItemFS, function(key, value) {
@@ -326,7 +272,6 @@
                 }                
             });
         };
-        
         function buildFilterSection(buildTokenize) {            
             var spiritOptionsHtml = '';
             var brandOptionsHtml = '';
@@ -414,19 +359,11 @@
                 j$('.select2Search').on("change", function(evt) {
                     filterProducts();
                 });
-                /*
-                j$('.tokenize').tokenize({
-                    onAddToken: function(value, text, e){filterProducts()}, 
-                    onRemoveToken: function(value, e){filterProducts()},
-                    displayDropdownOnFocus: true
-                });
-                */
             }else{
                 //j$('select.tokenize').show().change(function(){filterProducts();});
                 j$('select.select2Search').show().change(function(){filterProducts();});
             }            
         }
-
         function bindEvents(buildTokenize){            
             j$('.save').click(function(){
                 //redirect to returnURL on click of save and close
@@ -497,8 +434,17 @@
                 j$(this).siblings().removeClass('btn-primary').addClass('btn-default');
                 j$(this).toggleClass('btn-primary btn-default');
             });
+            j$('.btn-product-toggle').click(function() {
+                isShowingAllProducts = !isShowingAllProducts;
+                if (isShowingAllProducts) {
+                    j$(this).text(labelProductOnOrder);
+                } else {
+                    j$(this).text(labelAllProducts);
+                }
+                j$(this).toggleClass('btn-primary');
+                filterProducts(isShowingAllProducts);
+            });
         }
-        
         function buildHeaderSection(){
             //build header info 
             //always add account link
@@ -536,8 +482,7 @@
                 j$('div#content').append(headerHTML);
             }
         }                    
-        
-        function filterProducts() {     
+        function filterProducts(allProducts) {     
             var filterSelector = '';
             console.log('filterSelector', filterSelector);
             var brandName = '';
@@ -567,13 +512,6 @@
                             suppliers.push(value);
                             filterSelector += '[data-supplier-name="'+value+'"]';
                         }
-                        /*
-                        if(searchType == 'statusSearch'){
-                            filterSelector += '['+searchType+'*="'+value.replace(/'/g,"\\'")+'"],';
-                        }else{
-                            filterSelector += '['+searchType+'="'+value.replace(/'/g,"\\'")+'"],';
-                        }
-                        */
                     }); 
                     filterSelector = filterSelector.replace(/'/g,"\\'");
                     //trimming last comma and adding to a jQuery filter function
@@ -581,6 +519,10 @@
                     //selector += '.filter(\''+filterSelector+'\')';
                 }   
             });
+            if (!isShowingAllProducts) {
+                filterSelector += "input[field='Unit__c']";
+            }
+            console.log('filterSelector', filterSelector);
             console.log('unitSizes', unitSizes);
             selector = 'div';
 			if (deviceType == 'desktop') {
@@ -593,133 +535,43 @@
             var items = j$(selector);
             console.log('items', items);
             var showItem = true;
+            var rowElement;
             j$.each(items, function(key, value) {
+                rowElement = j$(this);
                 if (spiritTypes.length > 0) {
                     if (spiritTypes.indexOf(value.getAttribute('data-spirit-type')) < 0) {
-                        j$(this).hide(); return true;
+                        rowElement.hide(); return true;
                     }
                 }
                     
                 if (brands.length > 0) {
                     if (brands.indexOf(value.getAttribute('data-brand-name')) < 0) {
-                        j$(this).hide(); return true;
+                        rowElement.hide(); return true;
                     }
                 }
                 
                 if (unitSizes.length > 0) {
                     if (unitSizes.indexOf(value.getAttribute('data-unit-size')) < 0) {
-                        j$(this).hide(); return true;
+                        rowElement.hide(); return true;
                     }
                 }
                 
                 if (suppliers.length > 0) {
                     if (suppliers.indexOf(value.gteAttribute('data-supplier-name')) < 0) {
-                        j$(this).hide(); return true;
+                        rowElement.hide(); return true;
+                    }
+                }
+                if (!isShowingAllProducts) {
+                    console.log('val for ' + rowElement.attr('data-product-name'), rowElement.find("[field='Unit__c']").val());
+                    var qty = rowElement.find("[field='Unit__c']").val();
+                    if (qty == undefined || qty == '') {
+                        console.log('value is nothing, hiding row');
+                        rowElement.hide(); return true;
                     }
                 }
                 
-                j$(this).show();
+                rowElement.show();
             });
-            /*
-            j$('#bootgrid').bootgrid("clear");
-            
-            var filterRowHTML = '';
-            var brandName = '';
-            var spiritType = '';
-            var unitSize = '';
-            var supplierName = '';
-            var selector='';
-            var spiritTypes = [];
-            var brands = [];
-            var unitSizes = [];
-            var suppliers = [];
-            //loop through each filter select input
-            j$('select.select2Search').each(function(key, value){                
-                var searchType = j$(this)[0].id;
-                //if there is a value for this filter select input
-                if(j$(this).val() != null){
-                    var filterSelector = '';
-                    //loop through array of selected values and add to a jQuery selector (escaping single quotes)
-                    j$.each(j$(this).val(), function(key, value){
-                        if(searchType == 'spiritTypeSearch') {
-                            spiritTypes.push(value);
-                        } else if (searchType == 'brandSearch') {
-                            brands.push(value);
-                        } else if (searchType == 'sizeSearch') {
-                            unitSizes.push(parseInt(value));
-                        } else if (searchType == 'supplierSearch') {
-                            suppliers.push(value);
-                        }
-                        if(searchType == 'statusSearch'){
-                            filterSelector += '['+searchType+'*="'+value.replace(/'/g,"\\'")+'"],';
-                        }else{
-                            filterSelector += '['+searchType+'="'+value.replace(/'/g,"\\'")+'"],';
-                        }
-                    }); 
-                    //trimming last comma and adding to a jQuery filter function
-                    filterSelector = filterSelector.substring(0,filterSelector.length -1);
-                    selector += '.filter(\''+filterSelector+'\')';
-                }   
-            });
-
-            var includeProduct = true;
-            var filteredList = [];
-            var groupName = '';
-            var classHidden = 'hidden';
-            var rows = [];
-            var isAdded = false;
-            j$.each(productList, function(key, value) {
-                var r = {};
-                includeProduct = true;
-                spiritType = value.Brand__r == null || value.Brand__r.Spirit_Type__c == null ? '' : value.Brand__r.Spirit_Type__c;
-                brandName = value.Brand__r == null ? '' : value.Brand__r.Name;
-                supplierName = value.Supplier__c == null ? '' : value.Supplier__c;
-                unitSize = value.Unit_Size__c == undefined || value.Unit_Size__c == null ? '' : value.Unit_Size__c;
-                if (spiritTypes.length > 0 && j$.inArray(spiritType, spiritTypes) < 0) { includeProduct = false; }
-                if (brands.length > 0 && j$.inArray(brandName, brands) < 0) { includeProduct = false; }
-                if (unitSizes.length > 0 && j$.inArray(unitSize, unitSizes) < 0) { includeProduct = false; }
-                if (suppliers.length > 0 && j$.inArray(supplierName, suppliers) < 0) { includeProduct = false; }
-                
-                groupName = '';
-                isAdded = false;
-                if (includeProduct == true) {
-                    
-                    //classHidden = 'hidden';
-                    j$(orderItemList).each(function() {
-                        if (this.Product__c == value.Id) {
-                            isAdded = true;
-                            return false;
-                        }
-                    });
-                    
-                    filterRowHTML = '<tr data-product-id="'+value.Id+'" class="list-item">';
-                    filterRowHTML += '<td data-column-id="addproduct"><i class="fa fa-plus" id="' + value.Id + '" data-name="' + value.Name + '" data-rmg-id="'+value.Reference_Material_Group__c+'"></i></td>';
-                    filterRowHTML += '<td data-column-id="checkmark"><i class="fa fa-check-square-o ' + classHidden + '" data-id="' + value.Id + '"></i></td>';
-                    filterRowHTML += '<td data-column-id="product" class="text-left ' + groupName + ' ' + spiritType.replace(/ /g,'_') +'">' + value.Name + '</td>';
-                    filterRowHTML += '<td data-column-id="brand" class="text-left ' + brandName.replace(/ /g,'_') + '">' + brandName + '</td>';
-                    filterRowHTML += '<td data-column-id="spirittype" class="text-left">' + spiritType + '</td>';
-                    filterRowHTML += '<td data-column-id="unitsize" class="text-right unitSize' + unitSize + '">' + unitSize + '</td>';
-                    filterRowHTML += '<td data-column-id="supplier" class="text-left ' + supplierName + '">' + supplierName + '</td>';
-                    filterRowHTML += '</tr>';
-                    
-                    r.id = value.Id;
-                    r.added = isAdded;
-                    r.product = value.Name;
-                    r.brand = brandName;
-                    r.spirittype = spiritType;
-                    r.unitsize = unitSize;
-                    r.supplier = supplierName;
-                    filteredList.push(value);
-                    rows.push(r);
-                }
-            });
-            j$('#bootgrid').bootgrid("append", rows);
-            j$('#bootgridTableBody i').click(function() {
-                j$('#bootgridTableBody tr[data-product-id="'+this.id+'"]').hide();
-                //j$('i[data-id="' + this.id + '"]').removeClass('hidden');
-                //addProductToOrderItemList(this.id, this.getAttribute('data-name'), true);
-            });
-            */
         }
         function addProductToOrderItemList(productId, productName, isNewRow) {
             console.log('[addproduct] productid', productId);
@@ -769,10 +621,11 @@
                     j$(totalFldId).text(totalQty.toFixed(2));
                 });
             }
+        
             if (marketName == 'Australia') {
             	j$("input[field='Discount__c']").off('change')
                 							    .change(function() {
-                    var loadedDiscount = parseFloat(j$(this).attr('data-loaded-discount'));
+                    var loadedDiscount = parseFloat(j$( this).attr('data-loaded-discount'));
                     var thisVal = parseFloat(j$(this).val());
                     if (thisVal > 0 && loadedDiscount > 0 && thisVal <= loadedDiscount) {
                         showWarning('Discount Override ($'+thisVal+') cannot less than or the same as the loaded discount ($'+loadedDiscount+')');
@@ -795,11 +648,116 @@
                         
                 });
             }
+            console.log('marketName: ', marketName);
+            if (marketName == 'Taiwan') {
+                j$("input[field='Unit__c']").off('change')
+                                            .change(function() {                                                
+                    let prodId = j$(this).attr('data-product-id');
+                    console.log('[units change] prodId', prodId);
+                    var caseFldId = '#Total_Ordered_Cases__c' +prodId;
+                    var packQty = parseInt(j$(this).attr('data-pack-qty'));
+                    if (packQty == null || packQty == 0) { packQty = 1; }
+                    var thisVal = parseInt(j$(this).val());
+                    if (thisVal == null || isNaN(thisVal)) { thisVal = 0; }
+                    console.log('[units change] packQty', packQty);
+                    console.log('[units change] units', thisVal);
+
+                        var totalCases = Math.floor(thisVal / packQty);
+                        var units = thisVal - (totalCases * packQty);
+                        var str = '';
+                        if (thisVal > 0) {
+                            if (totalCases > 0) {
+                                str = totalCases + ' cases ';
+                                if (units > 0) {
+                                    str += ', ' + units + ' units';
+                                }
+                            } else {
+                                str = units + ' units';
+                            }
+                        }
+                        console.log('[units change] totalCases', totalCases);
+                        console.log('[units change] units', units);
+                        console.log('[units change] str', str);
+                        j$(caseFldId).html(str);
+
+                    
+                    var finalPrice = j$('Final_Price__c'+prodId).val();
+                    if (finalPrice == null || finalPrice == '') { finalPrice = 0; }
+                    //var price = j$(this).attr('data-price');
+                    //if (price == undefined || price == null) { price = 0; }
+                    //var totalPrice = thisVal * price;
+                    //if (discount > 0) {
+                    //   totalPrice = totalPrice * (1-(discount/100));
+                    //}
+                    totalLineValue = finalPrice * units;
+                    var totalLineValueFldId = '#Total_Line_Value__c' + prodId;
+                    j$(totalLineValueFldId).html(totalLineValue.toFixed(2));
+                    
+                    updateTotalOrderValue();
+                });
+                j$("input[field='Discount_Percentage__c']").off('change')
+                                                          .change(function() {
+                                                              console.log('discount percentage change');
+                    var price = parseFloat(j$(this).attr('data-price'));
+                    if (price == null) { price = 0; }
+
+                    var unitFldId = '#Unit__c' + j$(this).attr('data-product-id');
+                    var units = parseInt(j$(unitFldId).val());
+                    if (units == null || units == '' || isNaN(units)) { units = 0; }
+
+                    var discount = parseFloat(j$(this).val());
+                    if (discount == null || discount == '' || isNaN(discount)) { discount = 0; }
+                    if (discount > discountThreshold) {
+                        alert(discountAboveThresholdError);
+                        j$(this).val(0);
+                    } else {
+                        var totalPrice = price;
+                        if (discount > 0) { 
+                            totalPrice = totalPrice * (1-(discount/100)); 
+                        }
+                        var totalLineValue = totalPrice * units;
+                        console.log('price', price);
+                        console.log('units', units);
+                        console.log('discount', discount);
+                        console.log('totalPrice', totalPrice);
+                        var finalPriceFldId = '#Final_Price__c' + j$(this).attr('data-product-id');
+                        j$(finalPriceFldId).html(totalPrice.toFixed(2));
+
+                        var totalLineValueFldId = '#Total_Line_Value__c' + j$(this).attr('data-product-id');
+                        j$(totalLineValueFldId).html(totalLineValue.toFixed(2));
+
+                        updateTotalOrderValue();
+                    }
+                });
+            }
         }
-        function buildItemRow(orderItem, product, isNewRow) {
+        function updateTotalOrderValue() {
+            var selector = 'div';
+            if (deviceType == 'desktop') {
+                selector = '#oiTable tr';
+            }
+
+            var rows = j$(selector + ' [field="Total_Line_Value__c"]');            
+            var totalOrderValue = 0;
+            console.log('[updateTotalOrderValue] rows', rows);
+            j$.each(rows, function(key, value) {
+                console.log('key', key);
+                console.log('value', value);
+                var fp = parseFloat(j$(this).html());
+                console.log('fp', fp);
+                if (!isNaN(fp)) {
+                    totalOrderValue += fp;                
+                }
+
+                console.log('totalOrderValue', totalOrderValue);
+            });
+            j$('#totalOrderValue').html(totalOrderValueLabel + ': ' + numeral(totalOrderValue).format('0,0.00'));
+        }
+        function buildItemRow(orderItem, product, pmi, isNewRow) {
             if (product == undefined && orderItem == undefined) { return null; }
             console.log('[buildItemRow] orderItem', orderItem);            
             console.log('[buildItemRow] product', product);
+            console.log('[buildItemRow] pmi', pmi);
             //console.log('[buildItemRow] isNewRow', isNewRow);
             var orderItemId = '';
             var productId = '';
@@ -812,6 +770,8 @@
             var rmgId = '';
             var totalQty = 0;
             var totalBonus = 0;
+            var price = 0;
+            
             if (orderItem == null) {
                 productId = product.Id;
                 productName = product.Name;
@@ -823,6 +783,7 @@
                 unitSize = product.Unit_Size__c;
                 supplierName = product.Supplier__c;
                 rmgId = product.Price_Material_Group__c;
+                price = product.Price__c;
             } else {
                 orderItemId = orderItem.Id;
                 productId = orderItem.Product__c;
@@ -840,6 +801,7 @@
                             unitSize = product.Unit_Size__c;
                             supplierName = product.Supplier__c;
                             rmgId = value.Price_Material_Group__c;
+                            price = value.Price__c;
                             return false;
                         }
                     });
@@ -853,6 +815,7 @@
                     unitSize = orderItem.Product__r.Unit_Size__c;
                     supplierName = orderItem.Product__r.Supplier__c;
                     rmgId = orderItem.Product__r.Price_Material_Group__c;
+                    price = orderItem.Price__c;
                 }
             }
             
@@ -874,6 +837,7 @@
     
                 var loadedDiscount = 0;
                 var deal = null;
+                var kspDiscount = 0;
                 //console.log('[builditemrow] thisorder', thisOrder);
                 j$.each(dealList, function(key, value) {
                     //console.log('[builditemrow] deal.# of related to:', value.Deal_Related_To__r);
@@ -908,10 +872,18 @@
                         var gpi, gpiStartDate, gpiEndDate;
                         for (var i = 0; i < deal.Group_Promotion_Items__r.records.length; i++) {
                             gpi = deal.Group_Promotion_Items__r.records[i];
-                            if (gpi.Reference_Material_Group__c == rmgId) {
+                            if (gpi.Reference_Material_Group__c == rmgId) {                                
                                 gpiStartDate = new Date(gpi.Start_Date__c);
                                 gpiEndDate = new Date(gpi.End_Date__c);
                                 if (gpiStartDate <= today && gpiEndDate >= today) {
+                                    // New deal format changes.  Not ready to be deployed with Taiwan's changes
+                                    //if (deal.Promo_Code__c.substr(0,4).toLowerCase() == 'ksp ') {
+                                    //    kspDiscount += gpi.Discount_Amount__c;
+                                    //} else {
+                                    //    if (gpi.Discount_Amount__c > loadedDiscount) { loadedDiscount = gpi.Discount_Amount__c; }
+                                    //    if (gpi.Ongoing__c != null && gpi.Ongoing__c > loadedDiscount) { loadedDiscount = gpi.Ongoing__c; }
+                                    //}
+                                    //
                                     if (gpi.Discount_Amount__c > loadedDiscount) { loadedDiscount = gpi.Discount_Amount__c; }
                                     if (gpi.Ongoing__c != null && gpi.Ongoing__c > loadedDiscount) { loadedDiscount = gpi.Ongoing__c; }
                                 }
@@ -931,11 +903,11 @@
             var oiHTML = '';
                 console.log('[buildItemRow] orderItemId', orderItemId);
             if (deviceType == 'desktop') {
-                oiHTML = '<tr id="'+orderItemId+'" data-oi-id="' + orderItemId + '" data-product-id="' + productId + '" data-product-name="' + productName + '" data-tolerance="'+tolerance+'" data-loaded-discount="' + loadedDiscount + '" data-brand-name="'+brandName+'" data-spirit-type="'+spiritType+'" data-unit-size="'+unitSize+'" data-supplier-name="'+supplierName+'">';
+                oiHTML = '<tr id="'+orderItemId+'" data-oi-id="' + orderItemId + '" data-product-id="' + productId + '" data-product-name="' + productName + '" data-tolerance="'+tolerance+'" data-loaded-discount="' + loadedDiscount + '" data-ksp-discount="'+kspDiscount+'" data-brand-name="'+brandName+'" data-spirit-type="'+spiritType+'" data-unit-size="'+unitSize+'" data-supplier-name="'+supplierName+'">';
                 oiHTML += '<td><i class="fa fa-remove" data-oi-id="' + orderItemId + '" data-product-id="' + productId + '"></i></td>';
                 oiHTML += '<td class="productName" colspan="2"><span class="text-left">' + productName + '</span></td>';
             } else {
-                oiHTML += '<div class="row" id="'+orderItemId+'" data-oi-id="' + orderItemId + '" data-product-id="' + productId + '" data-product-name="' + productName + '" data-tolerance="'+tolerance+'" data-loaded-discount="' + loadedDiscount + '" data-brand-name="'+brandName+'" data-spirit-type="'+spiritType+'" data-unit-size="'+unitSize+'" data-supplier-name="'+supplierName+'">';
+                oiHTML += '<div class="row" id="'+orderItemId+'" data-oi-id="' + orderItemId + '" data-product-id="' + productId + '" data-product-name="' + productName + '" data-tolerance="'+tolerance+'" data-loaded-discount="' + loadedDiscount + '" data-ksp-discount="'+kspDiscount+'" data-brand-name="'+brandName+'" data-spirit-type="'+spiritType+'" data-unit-size="'+unitSize+'" data-supplier-name="'+supplierName+'">';
                 oiHTML += '<div class="rowHeader headerShadow"><i style="font-size:130%; padding: 5px;" class="fa fa-remove" data-oi-id="' + orderItemId + '" data-product-id="' + productId + '"></i><span class="productName lead">' + productName + '</span>';
                 oiHTML += '</div><div class="fields mandatory fieldsShadow">';
                 
@@ -949,7 +921,7 @@
                 section = 'table';
             }
             j$.each(orderItemFS, function(key, value) {
-                oiHTML += '<' + elementTag + ' class="' + value.type + cssClass + '">' + buildInput(value, isNewRow, productId, orderItem, product, section, tolerance, loadedDiscount) + '</' + elementTag + '>';
+                oiHTML += '<' + elementTag + ' class="' + value.type + cssClass + '" style="text-align: left;">' + buildInput(value, isNewRow, productId, orderItem, product, pmi, section, tolerance, loadedDiscount, kspDiscount, price) + '</' + elementTag + '>';
             });
             if (deviceType == 'desktop') {
                 oiHTML += '</tr>';
@@ -1012,50 +984,82 @@
             var lines = '';
             var row;
             console.log('[buildProductItems] orderItemList', orderItemList);
-            var orderItem;
-            
+            console.log('[buildProductItems] productList', productList);
+            console.log('[buildProductItems] promotionitems', promotion == undefined ? 'undefined' : promotion.Promotion_Material_Items__r);
+            var orderItem = null;
+            var productFound = false;
             j$.each(productList, function(key, value) {
+                if (thisOrder.Type_of_Goods__c != undefined && value.RecordType.Name != thisOrder.Type_of_Goods__c) {
+                    return true;
+                }
+
+                productFound = false;
                 for(var i = 0; i < orderItemList.length; i++) {
+                    console.log('[buildProductItems] i, orderItemList[i], productId', i, orderItemList[i].Product__c, value.Id);
                     orderItem = null;
                     if (orderItemList[i].Product__c == value.Id) {
                         orderItem = orderItemList[i];
                         
-                        console.log('[buildProductItems] value', value);
-                        row = buildItemRow(orderItem, value, false);
-                        if (row != null) { lines += row; }                
+                        console.log('[buildProductItems] product', value);
+                        console.log('[buildProductItems] orderItem', orderItem);
+                        row = buildItemRow(orderItem, value, undefined, false);
+                        if (row != null) { 
+                            lines += row; 
+                            productFound = true;
+                        }                
                     }
                 }
-
-                if (orderItem == null) {
-                    row = buildItemRow(orderItem, value, false);
+                if (orderItemList.length == 0 && promotion != undefined && promotion.Promotion_Material_Items__r != undefined && promotion.Promotion_Material_Items__r.records.length > 0) {
+                    console.log('[buildProductItems] building product lines from promotion');
+                    for(var i = 0; i < promotion.Promotion_Material_Items__r.records.length; i++) {
+                        if (promotion.Promotion_Material_Items__r.records[i].Product_Custom__c == value.Id) {
+                            console.log('[buildProductItems] product', value);
+                            console.log('[buildProductItems] pmi', promotion.Promotion_Material_Items__r.records[i]);
+                            row = buildItemRow(null, value, promotion.Promotion_Material_Items__r.records[i], false);
+                            console.log('[buildProductItems] pmi row', row);
+                            if (row != null) {
+                                lines += row;
+                                productFound = true;
+                            }
+                        }
+                    }
+                }
+                console.log('[buildProductItems] productFound', productFound);
+                if (productFound == false) {
+                    console.log('[buildProductItems] orderItem for product', orderItem);
+                    console.log('[buildProductItem] no order item found for product', value);
+                    row = buildItemRow(orderItem, value, undefined, false);
                     if (row != null) { lines += row; }                
                 }
             });
             
             
-            /*
-            j$.each(orderItemList, function(key, value) {
-                row = buildItemRow(value, null, false);
-                if (row != null) { lines += row; }
-            });
-            */
             if (lines.length > 0) {
                 appendToOrderItemTable(lines);
                 j$("input[field='Unit__c']").trigger("change");
+                if (marketName == 'Taiwan') {
+                   j$("input[field='Discount_Percentage__c']").trigger("change");                    
+                }
             }
             if (orderItemList.length > 0) {
                 var selector = 'div#content .row';
                 if (deviceType == 'desktop') {
                     selector = '#oiTable tbody tr';
                 }
-                j$(selector+'[data-oi-id=""]').hide();
-                j$(selector+' :not([data-oi-id=""])').show();
-                //buildOrderItems();
+                console.log('[buildProductItems] lockOrder', lockOrder);
+                if (lockOrder == true || marketName == 'Australia' || marketName == 'Czech Republic' || marketName == 'Poland') {
+                    j$(selector+'[data-oi-id=""]').hide();
+                    j$(selector+' :not([data-oi-id=""])').show();
+                    //buildOrderItems();
+                }
             }
         }
-        
         //build out the actual input tags for each type
-        function buildInput(obj, isNewRow, prodId, orderItem, product, section, tolerance, loadedDiscount){
+        function buildInput(obj, isNewRow, prodId, orderItem, product, pmi, section, tolerance, loadedDiscount, kspDiscount, price){
+            console.log('[buildInput] obj', obj);
+            console.log('[buildInput] orderitem', orderItem);
+            console.log('[buildInput] product', product);
+            console.log('[buildInput] pmi', pmi);
             var html = '';
             var value = '';
             if (orderItem != null) {
@@ -1070,8 +1074,14 @@
                 if (obj.fieldPath == 'Max_PA_Per_Case__c') {
                     value = numeral(tolerance).format('0,0.00');
                 }
+
             }
             
+            if (obj.fieldPath == 'Unit__c' && (value == '' || value == undefined) && pmi != undefined) {
+                value = pmi.Quantity__c;
+                console.log('[buildInput] setting units from pmi', value);
+            }
+
             var objectName = 'Order_Item__c';
 
             if(value == undefined){
@@ -1085,6 +1095,8 @@
             if (pos >= 0) {
                 isReadOnly = true;
             }
+
+            console.log('[buildInput] value', value);
             
             //build the correct HTML input type, read only in Account Info section if not required on field set
             switch(inputTypeMap[obj.type]){                             
@@ -1094,23 +1106,23 @@
                     } else {
                         var placeholderText = '';
                         if (obj.fieldPath == 'Discount__c') {
-                            placeholderText = numeral(loadedDiscount).format('0,0.00');
+                            placeholderText = numeral(loadedDiscount+kspDiscount).format('0,0.00');
                         }
-                        html += '<input id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="'+product.Id+'" data-product-name="'+product.Name+'" data-pack-qty="'+product.Pack_Quantity__c+'" data-tolerance="' + tolerance + '" data-loaded-discount="'+loadedDiscount+'" type="'+inputTypeMap[obj.type]+'" step="any" value="'+value+'" placeholder="'+placeholderText+'" class="fieldInput slds-input" ' + (isReadOnly ? 'disabled' : '') + ' />';
+                        html += '<input id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="'+product.Id+'" data-product-name="'+product.Name+'" data-pack-qty="'+product.Pack_Quantity__c+'" data-tolerance="' + tolerance + '" data-loaded-discount="'+loadedDiscount+'" data-ksp-discount="'+kspDiscount+'" data-price="'+price+'" type="'+inputTypeMap[obj.type]+'" step="any" value="'+value+'" placeholder="'+placeholderText+'" class="fieldInput slds-input" ' + (isReadOnly ? 'disabled' : '') + ' />';
                     }
                     break;
                 case 'select':
                     if(isReadOnly == true || lockOrder == true){
-                        html += '<span id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id+'" data-product-name="'+product.Name+'" style="margin-bottom: 0.5rem;">'+value+'</span>';
+                        html += '<span id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id+'" data-product-name="'+product.Name+'" data-price="'+price+'" style="margin-bottom: 0.5rem;">'+value+'</span>';
                     }else{
                         html += '<select id="'+obj.fieldPath+'-'+product.Id+'" data-oi-id="' + orderItem.Id + '" field="'+obj.fieldPath+'" class="fieldInput slds-select  "><option value=""></option>';
                         var options = getSelectOptions(obj.fieldPath, objectName);
                         if (options != null) {
-                            for(var i=0;i<options.values.length;i++){
-                                if(value == options.values[i]){
-                                    html+= '<option value="'+options.values[i]+'" selected>'+options.labels[i]+'</option>';
+                            for(var ii=0;ii<options.values.length;ii++){
+                                if(value == options.values[ii]){
+                                    html+= '<option value="'+options.values[ii]+'" selected>'+options.labels[ii]+'</option>';
                                 }else{
-                                    html+= '<option value="'+options.values[i]+'">'+options.labels[i]+'</option>';
+                                    html+= '<option value="'+options.values[ii]+'">'+options.labels[ii]+'</option>';
                                 }
                             }
                         }
@@ -1119,13 +1131,13 @@
                     break;
                 case 'checkbox':
                     if(isReadOnly == true || lockOrder == true){
-                        html += '<input id="'+obj.fieldPath+product.Id +'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" type="'+inputTypeMap[obj.type]+'" disabled="disabled" class="fieldInput cmn-toggle cmn-toggle-round-flat"/>';
+                        html += '<input id="'+obj.fieldPath+product.Id +'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" data-price="'+price+'" type="'+inputTypeMap[obj.type]+'" disabled="disabled" class="fieldInput cmn-toggle cmn-toggle-round-flat"/>';
                         html += '<label for="'+obj.fieldPath+product.Id +'" class="'+section+'Checkbox"></label>';
                     }else{
                         if(value == true){
-                            html += '<input id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" type="'+inputTypeMap[obj.type]+'" checked="checked" class="fieldInput cmn-toggle cmn-toggle-round-flat"/>';
+                            html += '<input id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" data-price="'+price+'" type="'+inputTypeMap[obj.type]+'" checked="checked" class="fieldInput cmn-toggle cmn-toggle-round-flat"/>';
                         }else{
-                            html += '<input id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" type="'+inputTypeMap[obj.type]+'" class="fieldInput btn cmn-toggle cmn-toggle-round-flat"/>';
+                            html += '<input id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" data-price="'+price+'" type="'+inputTypeMap[obj.type]+'" class="fieldInput btn cmn-toggle cmn-toggle-round-flat"/>';
                         }
                         html += '<label for="'+obj.fieldPath+product.Id+'" class="'+section+'Checkbox"></label>';
                     }                    
@@ -1139,15 +1151,15 @@
                         relatedValue = infoField.Name;
                     }
                     var lookupField;
-                    for(var i = 0; i < relationships.length; i++) {
-                        if (relationships[i].name == obj.fieldPath) {
-                            lookupField = relationships[i];
+                    for(var ii = 0; ii < relationships.length; ii++) {
+                        if (relationships[ii].name == obj.fieldPath) {
+                            lookupField = relationships[ii];
                             break;
                         }
                     }
                                         
                     if (lookupField) {                            
-                        html += '<div id="' + obj.fieldPath+product.Id + '" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'">';
+                        html += '<div id="' + obj.fieldPath+product.Id + '" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" data-price="'+price+'">';
 
                         $Lightning.use("c:CustomLookup", function() {
                             $Lightning.createComponent(
@@ -1161,22 +1173,21 @@
                     }
                     break;
                 case 'date':
-                    html += '<input id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" class="'+inputTypeMap[obj.type]+'Input slds-input-clone" type="'+inputTypeMap[obj.type]+'" value="'+value+'" ' + (isReadOnly == true || lockOrder == true ? 'disabled' : '') + ' />';
+                    html += '<input id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" data-price="'+price+'" class="'+inputTypeMap[obj.type]+'Input slds-input-clone" type="'+inputTypeMap[obj.type]+'" value="'+value+'" ' + (isReadOnly == true || lockOrder == true ? 'disabled' : '') + ' />';
                     break;
                 default:
                     if(isReadOnly == true || lockOrder == true){
-                        html += '<span id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" style="margin-bottom: 0.5rem;">'+value+'</span>';
+                        html += '<span id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" data-price="'+price+'" style="margin-bottom: 0.5rem;">'+value+'</span>';
                     }else{                    
                         if (obj.type == 'textarea') {
-                            html += '<textarea id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" type="'+inputTypeMap[obj.type]+'" value="'+value+'" class="fieldInput slds-textarea" row="4" ' + (isReadOnly == true || lockOrder == true ? 'disabled' : '') + '/>';
+                            html += '<textarea id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" data-price="'+price+'" type="'+inputTypeMap[obj.type]+'" value="'+value+'" class="fieldInput slds-textarea" row="4" ' + (isReadOnly == true || lockOrder == true ? 'disabled' : '') + '/>';
                         } else {
-                            html += '<input id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" type="'+inputTypeMap[obj.type]+'" value="'+value+'" class="fieldInput slds-input" ' + (isReadOnly == true || lockOrder == true ? 'disabled' : '') + '/>';
+                            html += '<input id="'+obj.fieldPath+product.Id+'" field="'+obj.fieldPath+'" data-oi-id="' + orderItem.Id + '" data-product-id="' + product.Id + '" data-product-name="'+product.Name+'" data-price="'+price+'" type="'+inputTypeMap[obj.type]+'" value="'+value+'" class="fieldInput slds-input" ' + (isReadOnly == true || lockOrder == true ? 'disabled' : '') + '/>';
                         }
                     }
             } 
             return html;               
         }
-    
         //get url param
         function getQueryVariable(variable) {
            var query = window.location.search.substring(1);
@@ -1274,23 +1285,22 @@
             
             return { values: [], labels: [] };
         }
-    
         //toggle loading gif and saved message
         function loading(val, visible, delay) {
-        if (val == 'load') {
-            if (visible) {
-                j$("#loadingMessage").fadeIn(100).css("display","inline").css("visibility","visible");
-            } else {
-                j$("#loadingMessage").fadeOut();
+            if (val == 'load') {
+                if (visible) {
+                    j$("#loadingMessage").fadeIn(100).css("display","inline").css("visibility","visible");
+                } else {
+                    j$("#loadingMessage").fadeOut();
+                }
+            } else if (val == 'save') {
+                if (visible) {
+                    j$(".savedMessage").fadeIn(100).css("display","inline").css('visibility','visible');
+                }
+                else {
+                    j$(".savedMessage").fadeIn(100).css("display","inline").delay(3000).fadeOut();    
+                }
             }
-        } else if (val == 'save') {
-            if (visible) {
-                j$(".savedMessage").fadeIn(100).css("display","inline").css('visibility','visible');
-            }
-            else {
-                j$(".savedMessage").fadeIn(100).css("display","inline").delay(3000).fadeOut();    
-            }
-        }
         }
         
         function clearForm(){
@@ -1308,7 +1318,6 @@
                 j$('#filterSection').hide();
             }
         }
-        
     	function processOrder() {
             var requiresApproval = false;
             if (marketName == 'Australia') {
@@ -1316,20 +1325,6 @@
                 var bonusUnit = 0;
                 var bonusQty = 0;
                 for(var i = 0; i < orderItemList.length; i++) {
-                    /*
-                    var selector = 'div';
-                    if (deviceType == 'desktop') {
-                        selector = 'tr';
-                    }
-                    var tr = j$(selector + '[data-product-id*="'+orderItemList[i].Product__r.Id+'"]');
-                    if (tr != null) {
-                        var tolerance = parseFloat(tr.getAttribute('data-tolerance'));
-                        if (orderItemList[i].Discount__c > tolerance) {
-                            requiresApproval = true;
-                            break;
-                        }
-                    }
-                    */
                     bonusCarton = orderItemList[i].Carton_Bonus__c == null || orderItemList[i].Carton_Bonus__c == '' ? 0 : orderItemList[i].Carton_Bonus__c;
                     bonusUnit = orderItemList[i].Unit_Bonus__c == null || orderItemList[i].Unit_Bonus__c == '' ? 0 : orderItemList[i].Unit_Bonus__c;
                     bonusQty = parseFloat(bonusCarton) + parseFloat(bonusUnit);
@@ -1418,14 +1413,26 @@
                     if (fldName == 'Discount__c' && orderItem[fldName] > tolerance) {
                         approvalProducts.push(productName);
                     }
-                });        
-                
+                });       
+                if (marketName == 'Taiwan') { 
+                    j$(row).find('span').each(function() {
+                        var fld = j$(this);
+                        var fldName = fld.attr('field');
+                        if (fldName == 'Final_Price__c') {
+                            orderItem[fldName] = parseFloat(fld.html());
+                        }
+                        if (fldName == 'Total_Ordered_Cases__c') {
+                            orderItem[fldName] = fld.html();
+                        }
+                    });
+                }
                 var addItem = false;
                 if (orderItem['Carton__c'] && parseInt(orderItem['Carton__c']) > 0) { addItem = true; }
                 if (orderItem['Unit__c'] && parseInt(orderItem['Unit__c']) > 0) { addItem = true; }
                 if (orderItem['Discount__c'] && parseFloat(orderItem['Discount__c']) > 0) { addItem = true; }
+                if (orderItem['Discount_Percentage__c'] && parseFloat(orderItem['Discount_Percentage__c']) > 0) { addItem = true; }
                 if (orderItem['Carton_Bonus__c'] && parseInt(orderItem['Carton_Bonus__c']) > 0) { addItem = true; }
-                if (orderItem['Unit_Bonus__c'] && parseInt(orderItem['Unit_Bonus__c']) > 0) { addItem = true; }
+                if (orderItem['Unit_Bonus__c'] && parseInt(orderItem['Unit_Bonus__c']) > 0) { addItem = true; }                
                 if (!addItem) { 
                     return true;
                 }
@@ -1452,6 +1459,9 @@
                     bonusCarton = orderItem.Carton_Bonus__c == null || orderItem.Carton_Bonus__c == '' ? 0 : parseInt(orderItem.Carton_Bonus__c);
                     bonusUnit = orderItem.Unit_Bonus__c == null || orderItem.Unit_Bonus__c == '' ? 0 : parseInt(orderItem.Unit_Bonus__c);
                     discount = orderItem.Discount__c == null || orderItem.Discount__c == '' ? 0 : parseFloat(orderItem.Discount__c);
+                    finalPrice = orderItem.Final_Price__c == null || orderItem.Final_Price__c == '' ? 0 : parseFloat(orderItem.Final_Price__c);
+                    orderItem["Total_Line_Value__c"] = unit * finalPrice;
+
                     line_OrderQty = carton + unit;
                     line_BonusQty = bonusCarton + bonusUnit;
                     console.log('[buildItemsToSave] lineOrderQty', line_OrderQty);
@@ -1555,7 +1565,7 @@
                             selector = '#oiTable tbody tr';
                         }
                         //j$(selector).remove();
-                        if(marketName == 'Australia' || marketName == 'Czech Republic') {
+                        if(marketName == 'Australia' || marketName == 'Czech Republic' || marketName == 'Taiwan') {
                             j$('.processOrder').removeAttr('disabled')
                             				   .removeClass('hidden')
                                 			   .show();
@@ -1582,9 +1592,10 @@
             j$('#confirmDialogMessage').text(msg);
             j$('#confirmDialog').modal('show');                    
         }
+        
     </script>
     <div class="bootstrap" style="height:100%">
-        <div class="container-fluid theme-showcase" role="main">            
+        <div class="container-fluid theme-showcase" role="main">      
             <div class="modal fade" id="confirmDialog" tabindex="-1" role="dialog" aria-labelledby="confirmDialogLabel" data-backdrop="static" data-keyboard="false">
                 <div class="modal-dialog modal-sm">
                     <div class="modal-content">
@@ -1610,6 +1621,7 @@
                 <div class="clear"></div>
                 <div class="rowButtons text-center" style="padding-top: 5px; padding-bottom: 5px;">
                     <button type="button" value="Clear All" id="clearFilter" data-role="none" class="btn bg-primary col-xs-push-3 col-lg-2">{!$Label.Clear_All}</button>
+                    <button type="button" value="Product on this Order" id="showProductOnOrder" data-role="none" class="btn bg-primary col-xs-push-3 col-lg-2 btn-product-toggle">{!$Label.Products_on_this_Order}</button>
                     <br />
                     <span id="filterError" class="filterError label-warning label">{!$Label.No_Products_Found}</span>
                 </div>
@@ -1630,8 +1642,7 @@
                         
                 </div>
             </div>                
-
-            <div class="clear"></div>
+            <div class="clear"></div>            
             <div id="topButtonDiv" class="buttonDiv text-center">
                 <button type="button" value="{!$Label.Save}" class="btn button save bg-primary actionButton" data-role="none" data-loading-text="{!$Label.Saving}">{!$Label.Save}</button>
                 <button type="button" value="{!$Label.Save_and_Close}" class="btn button save saveAndClose bg-primary actionButton" data-role="none" data-loading-text="{!$Label.Saving}">{!$Label.Save_and_Close}</button>
@@ -1646,13 +1657,14 @@
                 </div>
             </div>
             <div id="pageMessages" style="text-align:center;color:red;font-weight:bold;">
-                
+              
             </div>
             <div style="float:left;">
                 <span class="requiredField" style="margin-left: 20px; margin-right: 10px;"></span><span style="font-size: x-small;font-weight:bold;">{!$Label.AsteriskDenotesRequireField}</span>
             </div>
-            
             <div id="content" class="content section">
+                <div id="totalOrderValue">{!$Label.Total_Order_Value}</div>
+                <div class="clear"></div>
                 <div id="contentHeader" class="header btn-info">{!UPPER($ObjectType.Product__c.LabelPlural)}</div>
                 <div class="clear"></div>
                 <div class="rowButtons text-center">

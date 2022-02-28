@@ -4,6 +4,7 @@ global with sharing class OrderItemsHTML_Controller {
     public List<Product__c> productList             { get; set; }
     
     public String serializedOrder                   { get; set; }
+    public String serializedPromotion               { get; set; }
     public String serializedOrderItemFS             { get; set; }
     public String serializedReadOnlyFieldList       { get; set; }
     public String serializedProductList             { get; set; }
@@ -18,18 +19,35 @@ global with sharing class OrderItemsHTML_Controller {
     public String itemRecordTypeId                  { get; set; }
     public String productFieldNameToUse             { get; set; }
     public String fixMaterialErrors                 { get; set; }
+    public Decimal discountThreshold                { get; set; }
     
     public Boolean lockOrder                        { get; set; }
     public Boolean isCustomerService                { get; set; }
     
     public OrderItemsHTML_Controller(ApexPages.StandardController controller) {
-        thisOrder = [SELECT Id, Name, RecordTypeId, RecordType.Name, Account__c, Account__r.Market__c, Status__c, Order_Type__c, Account_Name__c, Account_Channel__c, Order_Date__c, Market__c, CallCard__c, Wholesalers__c, Wholesalers__r.Wholesaler__c, Banner_Partner__c, Wholesaler__c, National_Management_Group__c, State_Management_Group__c, Material_Errors__c FROM Order__c WHERE Id =:controller.getId()];
+        thisOrder = [SELECT Id, Name, RecordTypeId, RecordType.Name, Account__c, Account__r.Market__c, Status__c, Order_Type__c, Account_Name__c, 
+                            Account_Channel__c, Order_Date__c, Market__c, CallCard__c, Wholesalers__c, Wholesalers__r.Wholesaler__c, 
+                            Banner_Partner__c, Wholesaler__c, National_Management_Group__c, State_Management_Group__c, Material_Errors__c,
+                            Promotion__c, Type_of_Goods__c
+                       FROM Order__c 
+                      WHERE Id =:controller.getId()];
         
         marketName = thisOrder.Market__c;
         channel = thisOrder.Account_Channel__c;
         orderType = thisOrder.Order_Type__c;
         lockOrder = (thisOrder.RecordType.Name == 'Locked');
+
+        if (String.isNotEmpty(thisOrder.Promotion__c)) {
+            Promotion__c promotion = [SELECT Id, Name, Promotion_Start_Date__c, Promotion_End_Date__c, Channel__c,
+                                        (SELECT Id, Name, Product_Custom__c, Quantity__c FROM Promotion_Material_Items__r)
+                                        FROM Promotion__c 
+                                        WHERE Id =:thisOrder.Promotion__c];
+            serializedPromotion = JSON.serialize(promotion);   
+        }
         
+        Market__c market = [SELECT Id, Name, Promotion_Discount_Threshold__c FROM Market__c WHERE Name =:marketName LIMIT 1];
+        discountThreshold = market.Promotion_Discount_Threshold__c;
+
         Map<String,String> pageParams = ApexPages.currentPage().getParameters();
         if (pageParams.containsKey('fixMaterialErrors')) {
             fixMaterialErrors = pageParams.get('fixMaterialErrors');
@@ -85,7 +103,16 @@ global with sharing class OrderItemsHTML_Controller {
         
         System.debug('market: ' + thisOrder.Account__r.Market__c);
         System.debug('channel: ' + channel);
-        productList = [SELECT Id, Name, ProductCode__c, Pack_Quantity__c, RecordType.Name, Channel__c, Brand_Name__c, Brand__r.Name, Brand__r.Spirit_Type__c, Supplier__c, Unit_Size__c, Used_For__c, Price_Material_Group__c FROM Product__c WHERE IsActive__c = true AND Market__c =: thisOrder.Account__r.Market__c AND (Channel__c =:channel OR Channel__c = 'Both') AND Used_For__c INCLUDES ('Order') ORDER BY Sort_Order__c, Name ASC];            
+        productList = [SELECT Id, Name, ProductCode__c, Pack_Quantity__c, RecordType.Name, Channel__c, Brand_Name__c, Brand__r.Name, 
+                              Brand__r.Spirit_Type__c, Supplier__c, Unit_Size__c, Used_For__c, Price_Material_Group__c, Price__c, 
+                              Wholesale_Price__c 
+                         FROM Product__c 
+                        WHERE IsActive__c = true 
+                          AND Market__c =: thisOrder.Account__r.Market__c 
+                          AND (Channel__c =:channel OR Channel__c = 'Both') 
+                          AND Used_For__c INCLUDES ('Order') 
+                     ORDER BY Sort_Order__c, Name ASC];            
+
         if (productList == null) {
             serializedProductList = '';
         } else {
@@ -115,7 +142,21 @@ global with sharing class OrderItemsHTML_Controller {
             }
             
             List<Group_Promotions__c> deals = [SELECT RecordTypeName__c, Customer_Level__c, Status__c, Buy_Period_Start_Date__c,Buy_Period_End_Date__c,(SELECT Id, Account_Wholesaler__c,Banner_Group__c, State_Management_Group__c FROM Deal_Related_To__r),(SELECT Id, Reference_Material_Group__c, Discount_Amount__c, Ongoing__c, Start_Date__c, End_Date__c FROM Group_Promotion_Items__r) FROM Group_Promotions__c WHERE Application__c LIKE 'On Retailers Invoice%' AND (Status__c ='Approved' OR Status__c ='Closed') AND Buy_Period_Start_Date__c <= TODAY AND Buy_Period_End_Date__c >= TODAY AND Id IN (SELECT Group_Promotion__c FROM Group_Promotion_Distributors__c WHERE Wholesaler__c =:thisOrder.Wholesalers__r.Wholesaler__c)];
-            if (deals == null) {
+
+            /* New Deal format - not ready to be deployed with Taiwan's changes
+            List<Group_Promotions__c> deals = [SELECT RecordTypeName__c, Customer_Level__c, Status__c, Buy_Period_Start_Date__c,Buy_Period_End_Date__c,
+                                                    Contract_Type__c, Promo_Code__c, Calculation_Type__c,
+                                                    (SELECT Id, Account_Wholesaler__c,Banner_Group__c, State_Management_Group__c 
+                                                       FROM Deal_Related_To__r),
+                                                    (SELECT Id, Reference_Material_Group__c, Discount_Amount__c, Ongoing__c, Start_Date__c, End_Date__c 
+                                                       FROM Group_Promotion_Items__r) 
+                                                FROM Group_Promotions__c 
+                                               WHERE Calculation_Type__c = 'Rate per Case' 
+                                                 AND (Status__c ='Approved' OR Status__c ='Closed') 
+                                                 AND Buy_Period_Start_Date__c <= TODAY AND Buy_Period_End_Date__c >= TODAY 
+                                                 AND Id IN (SELECT Group_Promotion__c FROM Group_Promotion_Distributors__c WHERE Wholesaler__c =:thisOrder.Wholesalers__r.Wholesaler__c)];
+			*/
+			if (deals == null) {
                 serializedDealList = '';
             } else {
                 serializedDealList = JSON.serialize(deals);            

@@ -7,8 +7,7 @@
         <meta name="author" content="" />
         
         <script src='https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js'></script>        
-        <script src="https://www.b-fonline.com/salesforceresources/SFA/js/fastclick/lib/fastclick.js"></script>
-        
+
         <!--<apex:includeScript value="/lightning/lightning.out.js" />-->
         <apex:includeLightning />
         
@@ -17,14 +16,6 @@
         <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/BootstrapModernPages/css/bootstrap.min.css" />
         <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/BootstrapModernPages/css/bootstrap-theme.min.css" />
         <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/SLDS091/assets/styles/salesforce-lightning-design-system-ltng.min.css" />
-        
-        <!--<apex:includeScript value="{!URLFOR($Resource.SFA, '/js/fastclick/lib/fastclick.js')}" />-->
-
-        <!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"/>-->
-        <!--<apex:stylesheet value="{!URLFOR($Resource.SFA, '/css/accountSurvey.css')}" />-->
-        <!--<apex:stylesheet value="{!URLFOR($Resource.bootstrapmodernp, '/startbootstrap-modern-business-gh-pages/css/bootstrap.min.css')}" />-->
-        <!--<apex:stylesheet value="{!URLFOR($Resource.bootstrapmodernp, '/startbootstrap-modern-business-gh-pages/css/bootstrap-theme.min.css')}"/>-->
-        <!--<apex:stylesheet value="{!URLFOR($Resource.SLDS091, '/assets/styles/salesforce-lightning-design-system-ltng.min.css')}" />-->
     </head>
     <style>
         .requiredField:after {
@@ -82,6 +73,7 @@
     var recordTypeId = '{!recordTypeId}';
     var accountId = '{!accountId}';
     var accountName = "{!accountName}";
+    var accountChannel = "{!channel}";
     var orderId = '{!orderId}';
     var callCardId = '{!callCardId}';
     var returnToId = '{!returnToId}';
@@ -124,10 +116,6 @@
     }
     
     j$(document).ready(function() {
-        j$(function() {
-            FastClick.attach(document.body);
-        });
-        
         if( (typeof sforce != 'undefined') && (sforce.one != null) ) {
             inSF1 = true;
         }else{
@@ -311,6 +299,10 @@
             isReadOnly = !allowEditStatus;
         }
         
+        if (marketName == 'Taiwan' && obj.fieldPath == 'Channel__c' && accountChannel != 'INTEGRATED') {
+            isReadOnly = true;
+        }
+
         console.log('fld: ' + obj.fieldPath + ', value: ' + value);
         //build the correct HTML input type, read only in Account Info section if not required on field set
         switch(inputTypeMap[obj.type]){                             
@@ -503,9 +495,7 @@
                 }
             }
             console.log('bonusQty', bonusQty);
-            console.log('requiresApproval', requiresApproval);
 		}
-        
         Order_Controller.processOrder(orderId, requiresApproval, function(result, event) {
             if (event.status) {
                 itemsToDelete = [];
@@ -545,6 +535,9 @@
         order.Account__c = orderInfo.Account__c;
         order.RecordTypeId = recordTypeId;
         order.Order_Type__c = orderType;
+        if (orderInfo.Account_Channel__c != 'INTEGRATED') {
+            order.Channel__c = orderInfo.Channel__c;
+        }
         j$('#sectionContent').find('input,select,textarea').each(function() {
             var fldName = j$(this).attr('field');
             if(j$(this).attr('field') != undefined) {

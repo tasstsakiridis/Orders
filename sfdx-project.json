@@ -5,7 +5,8 @@
       "default": true
     }
   ],
+  "name": "Orders",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "45.0"
+  "sourceApiVersion": "51.0"
 }
