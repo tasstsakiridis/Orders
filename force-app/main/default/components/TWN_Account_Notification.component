@@ -1,0 +1,18 @@
+<apex:component layout="none" access="global" controller="TWN_Account_Notification_Controller">
+    <apex:attribute name="thisAccount" description="the account record" type="Account" assignTo="{!theAccount}" />
+
+<html>
+    <head>
+        <style>
+            @page {
+                margin: 1cm;
+            }
+        </style>
+    </head>
+    <body>
+        <p>{!msg}</p>
+        <p>{!$Label.Click_Link_to_Review}</p>
+        <p><a href="{!detailLink}">{!detailLink}</a></p>
+    </body>
+</html>
+</apex:component>
