@@ -73,6 +73,7 @@
     var recordTypeId = '{!recordTypeId}';
     var accountId = '{!accountId}';
     var accountName = "{!accountName}";
+    var accountChannel = "{!channel}";
     var orderId = '{!orderId}';
     var callCardId = '{!callCardId}';
     var returnToId = '{!returnToId}';
@@ -298,6 +299,10 @@
             isReadOnly = !allowEditStatus;
         }
         
+        if (marketName == 'Taiwan' && obj.fieldPath == 'Channel__c' && accountChannel != 'INTEGRATED') {
+            isReadOnly = true;
+        }
+
         console.log('fld: ' + obj.fieldPath + ', value: ' + value);
         //build the correct HTML input type, read only in Account Info section if not required on field set
         switch(inputTypeMap[obj.type]){                             
@@ -530,6 +535,9 @@
         order.Account__c = orderInfo.Account__c;
         order.RecordTypeId = recordTypeId;
         order.Order_Type__c = orderType;
+        if (orderInfo.Account_Channel__c != 'INTEGRATED') {
+            order.Channel__c = orderInfo.Channel__c;
+        }
         j$('#sectionContent').find('input,select,textarea').each(function() {
             var fldName = j$(this).attr('field');
             if(j$(this).attr('field') != undefined) {

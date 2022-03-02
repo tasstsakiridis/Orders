@@ -4,6 +4,7 @@ global with sharing class OrderItemsHTML_Controller {
     public List<Product__c> productList             { get; set; }
     
     public String serializedOrder                   { get; set; }
+    public String serializedPromotion               { get; set; }
     public String serializedOrderItemFS             { get; set; }
     public String serializedReadOnlyFieldList       { get; set; }
     public String serializedProductList             { get; set; }
@@ -26,7 +27,8 @@ global with sharing class OrderItemsHTML_Controller {
     public OrderItemsHTML_Controller(ApexPages.StandardController controller) {
         thisOrder = [SELECT Id, Name, RecordTypeId, RecordType.Name, Account__c, Account__r.Market__c, Status__c, Order_Type__c, Account_Name__c, 
                             Account_Channel__c, Order_Date__c, Market__c, CallCard__c, Wholesalers__c, Wholesalers__r.Wholesaler__c, 
-                            Banner_Partner__c, Wholesaler__c, National_Management_Group__c, State_Management_Group__c, Material_Errors__c 
+                            Banner_Partner__c, Wholesaler__c, National_Management_Group__c, State_Management_Group__c, Material_Errors__c,
+                            Promotion__c, Type_of_Goods__c
                        FROM Order__c 
                       WHERE Id =:controller.getId()];
         
@@ -34,6 +36,14 @@ global with sharing class OrderItemsHTML_Controller {
         channel = thisOrder.Account_Channel__c;
         orderType = thisOrder.Order_Type__c;
         lockOrder = (thisOrder.RecordType.Name == 'Locked');
+
+        if (String.isNotEmpty(thisOrder.Promotion__c)) {
+            Promotion__c promotion = [SELECT Id, Name, Promotion_Start_Date__c, Promotion_End_Date__c, Channel__c,
+                                        (SELECT Id, Name, Product_Custom__c, Quantity__c FROM Promotion_Material_Items__r)
+                                        FROM Promotion__c 
+                                        WHERE Id =:thisOrder.Promotion__c];
+            serializedPromotion = JSON.serialize(promotion);   
+        }
         
         Market__c market = [SELECT Id, Name, Promotion_Discount_Threshold__c FROM Market__c WHERE Name =:marketName LIMIT 1];
         discountThreshold = market.Promotion_Discount_Threshold__c;
@@ -145,8 +155,8 @@ global with sharing class OrderItemsHTML_Controller {
                                                  AND (Status__c ='Approved' OR Status__c ='Closed') 
                                                  AND Buy_Period_Start_Date__c <= TODAY AND Buy_Period_End_Date__c >= TODAY 
                                                  AND Id IN (SELECT Group_Promotion__c FROM Group_Promotion_Distributors__c WHERE Wholesaler__c =:thisOrder.Wholesalers__r.Wholesaler__c)];
-            */
-            if (deals == null) {
+			*/
+			if (deals == null) {
                 serializedDealList = '';
             } else {
                 serializedDealList = JSON.serialize(deals);            

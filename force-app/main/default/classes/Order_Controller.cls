@@ -54,7 +54,7 @@ global with sharing class Order_Controller {
             if (orderId != null && orderId != '') {
                 thisOrder = [SELECT Id, Name, RecordTypeId, RecordType.Name, Order_Type__c, Order_Date__c, Order_DateTime__c, Status__c, 
                                     Market__c, Account__c, Contact__c, Contact__r.Name, Contact__r.FirstName, Contact__r.LastName, 
-                                    CallCard__c, 
+                                    CallCard__c, Channel__c,
                                     (SELECT Id, Product__c, Carton__c, Carton_Bonus__c, Unit__c, Unit_Bonus__c, Max_PA_Per_Case__c 
                                        FROM Order_Items__r) 
                                FROM Order__c 
@@ -162,6 +162,7 @@ System.debug('Orderid: ' + orderId);
             
             thisOrder = new Order__c(RecordTypeId=recordTypeId, Account__c=accountId, Status__c='New', Order_Type__c=orderType);            
             if (callCardId != null && callCardId != '') { thisOrder.CallCard__c = callCardId; }
+            if (channel != 'INTEGRATED') { thisOrder.Channel__c = channel; }
         }
         
         String fieldSetName = marketName + '_' + recordTypeName;
@@ -190,7 +191,7 @@ System.debug('Orderid: ' + orderId);
         relationships.add(new RelationshipWrapper('Contact__c', 'Contact', 'people', 'WHERE AccountId = \'' + String.escapeSingleQuotes(accountId) + '\' AND Is_Active__c = true'));
         relationships.add(new RelationshipWrapper('Account_Wholesaler_Indirect__c', 'Account_Wholesaler__c', 'account', 'WHERE Account__c = \'' + String.escapeSingleQuotes(accountId) + '\' AND Is_Active__c = true', 'Wholesaler_Name__c'));
         relationships.add(new RelationshipWrapper('Wholesalers__c', 'Account_Wholesaler__c', 'account', 'WHERE Account__c = \'' + String.escapeSingleQuotes(accountId) + '\' AND Is_Active__c = true AND Allow_Order__c = true', 'Wholesaler_Name__c'));
-        relationships.add(new RelationshipWrapper('Promotion__c', 'Promotion__c', 'promotion', 'WHERE Account__c = \'' + String.escapeSingleQuotes(accountId) + '\' AND Promotion_End_Date__c > TODAY AND Approval_Status__c = \'Approved\''));
+        relationships.add(new RelationshipWrapper('Promotion__c', 'Promotion__c', 'promotion', 'WHERE Account__c = \'' + String.escapeSingleQuotes(accountId) + '\' AND Promotion_End_Date__c > TODAY'));
         
         serializedRelationshipList = JSON.serialize(relationships);
         if (readOnlyFieldSet != null) {
