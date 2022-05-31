@@ -563,7 +563,9 @@
                 }
                 if (!isShowingAllProducts) {
                     console.log('val for ' + rowElement.attr('data-product-name'), rowElement.find("[field='Unit__c']").val());
-                    var qty = rowElement.find("[field='Unit__c']").val();
+                    var cases = rowElement.find("[field='Carton__c']").val();
+                    var unit = rowElement.find("[field='Unit__c']").val();
+                    var qty = cases + unit;
                     if (qty == undefined || qty == '') {
                         console.log('value is nothing, hiding row');
                         rowElement.hide(); return true;
@@ -868,6 +870,7 @@
                         }
                     }
                     
+                    console.log('[buildItemRow] deal', deal);
                     if (deal != null) {
                         var gpi, gpiStartDate, gpiEndDate;
                         for (var i = 0; i < deal.Group_Promotion_Items__r.records.length; i++) {
@@ -877,15 +880,16 @@
                                 gpiEndDate = new Date(gpi.End_Date__c);
                                 if (gpiStartDate <= today && gpiEndDate >= today) {
                                     // New deal format changes.  Not ready to be deployed with Taiwan's changes
-                                    //if (deal.Promo_Code__c.substr(0,4).toLowerCase() == 'ksp ') {
-                                    //    kspDiscount += gpi.Discount_Amount__c;
-                                    //} else {
-                                    //    if (gpi.Discount_Amount__c > loadedDiscount) { loadedDiscount = gpi.Discount_Amount__c; }
-                                    //    if (gpi.Ongoing__c != null && gpi.Ongoing__c > loadedDiscount) { loadedDiscount = gpi.Ongoing__c; }
-                                    //}
-                                    //
-                                    if (gpi.Discount_Amount__c > loadedDiscount) { loadedDiscount = gpi.Discount_Amount__c; }
-                                    if (gpi.Ongoing__c != null && gpi.Ongoing__c > loadedDiscount) { loadedDiscount = gpi.Ongoing__c; }
+                                    console.log('[buildItemRow] deal.Promo_Code__c', deal.Promo_Code__c);
+                                    if (deal.Promo_Code__c != undefined && deal.Promo_Code__c.substr(0,4).toLowerCase() == 'ksp ') {
+                                        kspDiscount += gpi.Discount_Amount__c;
+                                    } else {
+                                        if (gpi.Discount_Amount__c > loadedDiscount) { loadedDiscount = gpi.Discount_Amount__c; }
+                                        if (gpi.Ongoing__c != null && gpi.Ongoing__c > loadedDiscount) { loadedDiscount = gpi.Ongoing__c; }
+                                    }
+                                    
+                                    //if (gpi.Discount_Amount__c > loadedDiscount) { loadedDiscount = gpi.Discount_Amount__c; }
+                                    //if (gpi.Ongoing__c != null && gpi.Ongoing__c > loadedDiscount) { loadedDiscount = gpi.Ongoing__c; }
                                 }
                             }
                         }
@@ -1013,10 +1017,10 @@
                     console.log('[buildProductItems] building product lines from promotion');
                     for(var i = 0; i < promotion.Promotion_Material_Items__r.records.length; i++) {
                         if (promotion.Promotion_Material_Items__r.records[i].Product_Custom__c == value.Id) {
-                            console.log('[buildProductItems] product', value);
-                            console.log('[buildProductItems] pmi', promotion.Promotion_Material_Items__r.records[i]);
+                            //console.log('[buildProductItems] product', value);
+                            //console.log('[buildProductItems] pmi', promotion.Promotion_Material_Items__r.records[i]);
                             row = buildItemRow(null, value, promotion.Promotion_Material_Items__r.records[i], false);
-                            console.log('[buildProductItems] pmi row', row);
+                            //console.log('[buildProductItems] pmi row', row);
                             if (row != null) {
                                 lines += row;
                                 productFound = true;
@@ -1024,10 +1028,11 @@
                         }
                     }
                 }
-                console.log('[buildProductItems] productFound', productFound);
-                if (productFound == false) {
-                    console.log('[buildProductItems] orderItem for product', orderItem);
-                    console.log('[buildProductItem] no order item found for product', value);
+                
+                //console.log('[buildProductItems] productFound', productFound);
+                if (productFound == false && promotion == undefined) {
+                    //console.log('[buildProductItems] orderItem for product', orderItem);
+                    //console.log('[buildProductItem] no order item found for product', value);
                     row = buildItemRow(orderItem, value, undefined, false);
                     if (row != null) { lines += row; }                
                 }
@@ -1079,7 +1084,7 @@
             
             if (obj.fieldPath == 'Unit__c' && (value == '' || value == undefined) && pmi != undefined) {
                 value = pmi.Quantity__c;
-                console.log('[buildInput] setting units from pmi', value);
+                //console.log('[buildInput] setting units from pmi', value);
             }
 
             var objectName = 'Order_Item__c';
