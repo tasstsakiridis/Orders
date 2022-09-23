@@ -1,3 +1,6 @@
+/**
+ * Test Class:  Order_Controller_Test
+ */
 global with sharing class OrderItemsHTML_Controller {
     public Order__c thisOrder                       { get; set; }
     public List<Order_Item__c> orderItemsList       { get; set; }
@@ -141,9 +144,8 @@ global with sharing class OrderItemsHTML_Controller {
                 serializedToleranceList = JSON.serialize(tolerances);
             }
             
-            List<Group_Promotions__c> deals = [SELECT RecordTypeName__c, Customer_Level__c, Status__c, Buy_Period_Start_Date__c,Buy_Period_End_Date__c,(SELECT Id, Account_Wholesaler__c,Banner_Group__c, State_Management_Group__c FROM Deal_Related_To__r),(SELECT Id, Reference_Material_Group__c, Discount_Amount__c, Ongoing__c, Start_Date__c, End_Date__c FROM Group_Promotion_Items__r) FROM Group_Promotions__c WHERE Application__c LIKE 'On Retailers Invoice%' AND (Status__c ='Approved' OR Status__c ='Closed') AND Buy_Period_Start_Date__c <= TODAY AND Buy_Period_End_Date__c >= TODAY AND Id IN (SELECT Group_Promotion__c FROM Group_Promotion_Distributors__c WHERE Wholesaler__c =:thisOrder.Wholesalers__r.Wholesaler__c)];
+            //List<Group_Promotions__c> deals = [SELECT RecordTypeName__c, Customer_Level__c, Status__c, Buy_Period_Start_Date__c,Buy_Period_End_Date__c,(SELECT Id, Account_Wholesaler__c,Banner_Group__c, State_Management_Group__c FROM Deal_Related_To__r),(SELECT Id, Reference_Material_Group__c, Discount_Amount__c, Ongoing__c, Start_Date__c, End_Date__c FROM Group_Promotion_Items__r) FROM Group_Promotions__c WHERE Application__c LIKE 'On Retailers Invoice%' AND (Status__c ='Approved' OR Status__c ='Closed') AND Buy_Period_Start_Date__c <= TODAY AND Buy_Period_End_Date__c >= TODAY AND Id IN (SELECT Group_Promotion__c FROM Group_Promotion_Distributors__c WHERE Wholesaler__c =:thisOrder.Wholesalers__r.Wholesaler__c)];
 
-            /* New Deal format - not ready to be deployed with Taiwan's changes
             List<Group_Promotions__c> deals = [SELECT RecordTypeName__c, Customer_Level__c, Status__c, Buy_Period_Start_Date__c,Buy_Period_End_Date__c,
                                                     Contract_Type__c, Promo_Code__c, Calculation_Type__c,
                                                     (SELECT Id, Account_Wholesaler__c,Banner_Group__c, State_Management_Group__c 
@@ -154,8 +156,9 @@ global with sharing class OrderItemsHTML_Controller {
                                                WHERE Calculation_Type__c = 'Rate per Case' 
                                                  AND (Status__c ='Approved' OR Status__c ='Closed') 
                                                  AND Buy_Period_Start_Date__c <= TODAY AND Buy_Period_End_Date__c >= TODAY 
+                                                 AND (RecordType.DeveloperName = 'Outlet_Deal' OR (RecordType.DeveloperName = 'Group_Deal' AND Promo_Code__c LIKE '%Off Invoice'))
                                                  AND Id IN (SELECT Group_Promotion__c FROM Group_Promotion_Distributors__c WHERE Wholesaler__c =:thisOrder.Wholesalers__r.Wholesaler__c)];
-			*/
+			
 			if (deals == null) {
                 serializedDealList = '';
             } else {

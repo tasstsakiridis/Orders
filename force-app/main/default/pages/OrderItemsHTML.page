@@ -8,19 +8,19 @@
         
         <script src='https://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js'></script>        
         
-        <script src="https://www.b-fonline.com/salesforceresources/numeral-js/min/numeral.min.js"></script>
-		<script src="https://www.b-fonline.com/salesforceresources/select2-4.0.3/dist/js/select2.min.js"></script>
-		<script src="https://www.b-fonline.com/salesforceresources/Bootgrid/js/jquery.bootgrid.js"></script>
-		<script src="https://www.b-fonline.com/salesforceresources/Bootgrid/js/jquery.bootgrid.fa.min.js"></script>        
+        <script src="https://salesforce-static.b-fonline.com/numeral-js/min/numeral.min.js"></script>
+		<script src="https://salesforce-static.b-fonline.com/select2-4.0.3/dist/js/select2.min.js"></script>
+        <script src="https://salesforce-static.b-fonline.com/Bootgrid/js/jquery.bootgrid.js"></script>
+		<script src="https://salesforce-static.b-fonline.com/Bootgrid/js/jquery.bootgrid.fa.min.js"></script>        
         
         
-	    <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/SFA/css/font-awesome.min.css" />
-        <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/SFA/css/accountSurvey.css" />
-        <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/select2-4.0.3/dist/css/select2.min.css" />
-		<link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/BootstrapModernPages/css/bootstrap.min.css" />
-		<link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/BootstrapModernPages/css/bootstrap-theme.min.css" />
-        <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/SLDS091/assets/styles/salesforce-lightning-design-system-ltng.min.css" />
-        <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/Bootgrid/css/jquery.bootgrid.min.css" />
+	    <link rel="stylesheet" href="https://salesforce-static.b-fonline.com/SFA/css/font-awesome.min.css" />
+        <link rel="stylesheet" href="https://salesforce-static.b-fonline.com/SFA/css/accountSurvey.css" />
+        <link rel="stylesheet" href="https://salesforce-static.b-fonline.com/select2-4.0.3/dist/css/select2.min.css" />
+		<link rel="stylesheet" href="https://salesforce-static.b-fonline.com/BootstrapModernPages/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="https://salesforce-static.b-fonline.com/BootstrapModernPages/css/bootstrap-theme.min.css" />
+        <link rel="stylesheet" href="https://salesforce-static.b-fonline.com/SLDS091/assets/styles/salesforce-lightning-design-system-ltng.min.css" />
+        <link rel="stylesheet" href="https://salesforce-static.b-fonline.com/Bootgrid/css/jquery.bootgrid.min.css" />
         
     </head>
     <style>
@@ -1169,7 +1169,7 @@
                         $Lightning.use("c:CustomLookup", function() {
                             $Lightning.createComponent(
                                 "c:lookupComponent",
-                                { searchString: relatedValue, recordId: value, label:obj.fieldPath, pluralLabel: '', sObjectAPIName: lookupField.objectName, filterClause: lookupField.filter, listIconSVGPath:"https:/www.b-fonline.com/salesforceresources/SLDS091/assets/icons/standard-sprite/svg/symbols.svg#account", listIconClass:"slds-icon-standard-account"},
+                                { searchString: relatedValue, recordId: value, label:obj.fieldPath, pluralLabel: '', sObjectAPIName: lookupField.objectName, filterClause: lookupField.filter, listIconSVGPath:"https:/salesforce-static.b-fonline.com/SLDS091/assets/icons/standard-sprite/svg/symbols.svg#account", listIconClass:"slds-icon-standard-account"},
                                 obj.fieldPath,
                                 function(cmp) {
                                 }
@@ -1654,7 +1654,7 @@
                 <button type="button" value="{!$Label.Cancel}" class="btn button cancel bg-primary actionButton" data-role="none">{!$Label.Cancel}</button>
                 <button type="button" value="{!$Label.Process_Order}" class="btn button processOrder bg-primary actionButton hidden" data-role="none" disabled="disabled">{!$Label.Process_Order}</button>
                 <div id="loadingImage" class="loadingImage" style="display:none">
-                    <img src="https://www.b-fonline.com/salesforceresources/SFA/img/transparentLoading.gif"/>
+                    <img src="https://salesforce-static.b-fonline.com/SFA/img/transparentLoading.gif"/>
                 </div>
                 <div id="savedMessage" class="savedMessage" style="display:none">
                     {!$Label.Saved}
@@ -1682,7 +1682,7 @@
                 <button type="button" value="{!$Label.Cancel}" class="btn button cancel bg-primary actionButton">{!$Label.Cancel}</button>
                 <button type="button" value="{!$Label.Process_Order}" class="btn button processOrder bg-primary actionButton hidden" data-role="none" disabled="disabled">{!$Label.Process_Order}</button>
                 <div class="loadingImage" style="display:none">
-                    <img src="https://www.b-fonline.com/salesforceresources/SFA/img/transparentLoading.gif"/>
+                    <img src="https://salesforce-static.b-fonline.com/SFA/img/transparentLoading.gif"/>
                 </div>
                 <div class="savedMessage" style="display:none">
                     {!$Label.Saved}
@@ -1724,7 +1724,7 @@
         </div>
     </div>
     <!--<script src="{!URLFOR($Resource.bootstrapmodernp, '/startbootstrap-modern-business-gh-pages/js/bootstrap.min.js')}"></script>-->
-    <script src="https://www.b-fonline.com/salesforceresources/BootstrapModernPages/js/bootstrap.min.js"></script>
+<script src="https://salesforce-static.b-fonline.com/BootstrapModernPages/js/bootstrap.min.js"></script>
     <script> 
         (function(){
             try{

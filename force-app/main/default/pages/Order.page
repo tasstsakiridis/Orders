@@ -11,11 +11,11 @@
         <!--<apex:includeScript value="/lightning/lightning.out.js" />-->
         <apex:includeLightning />
         
-        <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/SFA/css/font-awesome.min.css" />
-        <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/SFA/css/accountSurvey.css" />
-        <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/BootstrapModernPages/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/BootstrapModernPages/css/bootstrap-theme.min.css" />
-        <link rel="stylesheet" href="https://www.b-fonline.com/salesforceresources/SLDS091/assets/styles/salesforce-lightning-design-system-ltng.min.css" />
+        <link rel="stylesheet" href="https://salesforce-static.b-fonline.com/SFA/css/font-awesome.min.css" />
+        <link rel="stylesheet" href="https://salesforce-static.b-fonline.com/SFA/css/accountSurvey.css" />
+        <link rel="stylesheet" href="https://salesforce-static.b-fonline.com/BootstrapModernPages/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://salesforce-static.b-fonline.com/BootstrapModernPages/css/bootstrap-theme.min.css" />
+        <link rel="stylesheet" href="https://salesforce-static.b-fonline.com/SLDS091/assets/styles/salesforce-lightning-design-system-ltng.min.css" />
     </head>
     <style>
         .requiredField:after {
@@ -736,7 +736,7 @@
                     <apex:pagemessages id="messages"/>
                 </div>
                 <div id="loadingMessage" class="savedMessage" style="display:inline">
-                    {!$Label.Loading}<img src="https://www.b-fonline.com/salesforceresources/SFA/img/transparentLoading.gif"/>
+                    {!$Label.Loading}<img src="https://salesforce-static.b-fonline.com/SFA/img/transparentLoading.gif"/>
                     <apex:pageMessages id="loadingMessages"></apex:pageMessages>
                 </div>
                 <div class="options-dropdown" id='overflowmenu'>
@@ -762,7 +762,7 @@
                 <button type="button" value="{!$Label.Process_Order}" class="btn button processOrder bg-primary actionButton hidden" data-role="none" disabled="disabled">{!$Label.Process_Order}</button>
                 <button type="button" value="{!$Label.Add_Edit_Items}" class="btn button addItems bg-primary actionButton" data-role="none" disabled="disabled">{!$Label.Add_Edit_Items}</button>
                 <div class="loadingImage" style="display:none">
-                    <img src="https://www.b-fonline.com/salesforceresources/SFA/img/transparentLoading.gif"/>
+                    <img src="https://salesforce-static.b-fonline.com/SFA/img/transparentLoading.gif"/>
                 </div>
                 <div class="savedMessage" style="display:none">
                     {!$Label.Saved}
@@ -804,7 +804,7 @@
         </div>
     </div>
     <!--<script src="{!URLFOR($Resource.bootstrapmodernp, '/startbootstrap-modern-business-gh-pages/js/bootstrap.min.js')}"></script>-->
-    <script src="https://www.b-fonline.com/salesforceresources/BootstrapModernPages/js/bootstrap.min.js"></script>
+    <script src="https://salesforce-static.b-fonline.com/BootstrapModernPages/js/bootstrap.min.js"></script>
     <script> 
         (function(){
             try{
