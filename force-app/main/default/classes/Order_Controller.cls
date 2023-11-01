@@ -156,7 +156,7 @@ System.debug('Orderid: ' + orderId);
             if (marketName == null) { marketName = 'Poland'; }
             orderType = recordTypeName;
             System.debug('recordTypeName: ' + recordTypeName);
-            if (recordTypeName.containsIgnoreCase('indirect') || marketName == 'Czech Republic') {
+            if (recordTypeName.containsIgnoreCase('indirect') || marketName == 'Czech Republic' || marketName == 'Slovakia') {
                 orderType = 'In-Direct';
             }
             

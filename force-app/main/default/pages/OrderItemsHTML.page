@@ -10,7 +10,7 @@
         
         <script src="https://salesforce-static.b-fonline.com/numeral-js/min/numeral.min.js"></script>
 		<script src="https://salesforce-static.b-fonline.com/select2-4.0.3/dist/js/select2.min.js"></script>
-        <script src="https://salesforce-static.b-fonline.com/Bootgrid/js/jquery.bootgrid.js"></script>
+		<script src="https://salesforce-static.b-fonline.com/Bootgrid/js/jquery.bootgrid.js"></script>
 		<script src="https://salesforce-static.b-fonline.com/Bootgrid/js/jquery.bootgrid.fa.min.js"></script>        
         
         
@@ -231,7 +231,7 @@
             isDesktop = deviceType == 'desktop';
             loading('load', true);
 
-            if ((marketName == 'Australia' || marketName == 'Czech Republic' || marketName == 'Taiwan') && orderItemList.length > 0) {
+            if ((marketName == 'Australia' || marketName == 'Czech Republic' || marketName == 'Taiwan' || marketName == 'Slovakia') && orderItemList.length > 0) {
                 j$('.processOrder').removeAttr('disabled')
                 				   .removeClass('hidden')
                 				   .show();
@@ -842,7 +842,7 @@
                 var kspDiscount = 0;
                 //console.log('[builditemrow] thisorder', thisOrder);
                 j$.each(dealList, function(key, value) {
-                    //console.log('[builditemrow] deal.# of related to:', value.Deal_Related_To__r);
+                    deal = null;
                     if (value.Deal_Related_To__r && value.Deal_Related_To__r.records) {
                         for(var drt = 0; drt < value.Deal_Related_To__r.records.length; drt++) {
                             //console.log('[builditemrow] deal.relatedto', value.Deal_Related_To__r[drt]);
@@ -1570,7 +1570,7 @@
                             selector = '#oiTable tbody tr';
                         }
                         //j$(selector).remove();
-                        if(marketName == 'Australia' || marketName == 'Czech Republic' || marketName == 'Taiwan') {
+                        if(marketName == 'Australia' || marketName == 'Czech Republic' || marketName == 'Taiwan' || marketName == 'Slovakia') {
                             j$('.processOrder').removeAttr('disabled')
                             				   .removeClass('hidden')
                                 			   .show();
@@ -1724,7 +1724,7 @@
         </div>
     </div>
     <!--<script src="{!URLFOR($Resource.bootstrapmodernp, '/startbootstrap-modern-business-gh-pages/js/bootstrap.min.js')}"></script>-->
-<script src="https://salesforce-static.b-fonline.com/BootstrapModernPages/js/bootstrap.min.js"></script>
+    <script src="https://salesforce-static.b-fonline.com/BootstrapModernPages/js/bootstrap.min.js"></script>
     <script> 
         (function(){
             try{

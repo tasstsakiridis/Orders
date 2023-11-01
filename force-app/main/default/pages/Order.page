@@ -202,7 +202,7 @@
         
         if (isNewOrder == false) { 
             j$('.addItems').removeAttr('disabled'); 
-            if ((marketName == 'Australia' || marketName == 'Czech Republic') && hasLineItems == true) {
+            if ((marketName == 'Australia' || marketName == 'Czech Republic' || marketName == 'Slovakia') && hasLineItems == true) {
                 j$('.processOrder').removeAttr('disabled')
                                    .removeClass('hidden')
                                    .show();
@@ -589,7 +589,7 @@
                         returnToId = result.Id;
                         j$('.addItems').removeAttr('disabled')
                                        .show();
-                        if ((marketName == 'Australia' || marketName == 'Czech Republic') && hasLineItems == true) {
+                        if ((marketName == 'Australia' || marketName == 'Czech Republic' || marketName == 'Slovakia') && hasLineItems == true) {
                             j$('.processOrder').removeAttr('disabled')
                                                .removeClass('hidden')
                                                .show();
